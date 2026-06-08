@@ -15,13 +15,14 @@
     },
 
     "background": {
-        "scripts": [ "background.js" ],
+        "scripts": [ "store-regions.js", "app-store-url.js", "background.js" ],
         "type": "module"
     },
 
     "content_scripts": [{
-        "js": [ "content.js" ],
-        "matches": [ "*://example.com/*" ]
+        "js": [ "store-regions.js", "app-store-url.js", "content.js" ],
+        "matches": [ "<all_urls>" ],
+        "run_at": "document_start"
     }],
 
     "action": {
@@ -29,5 +30,7 @@
         "default_icon": "images/toolbar-icon.svg"
     },
 
-    "permissions": [ ]
+    "permissions": [ "storage", "tabs", "webNavigation" ],
+
+    "host_permissions": [ "*://apps.apple.com/*" ]
 }

@@ -4,7 +4,89 @@
         "description": "The display name for the extension."
     },
     "extension_description": {
-        "message": "This is Store Fix. You should tell us what your extension does here.",
+        "message": "Redirect App Store app links to your selected storefront region.",
         "description": "Description of what the extension does."
+    },
+    "fixedRegionLabel": {
+        "message": "Fix country or region"
+    },
+    "editRegion": {
+        "message": "Edit"
+    },
+    "doneEditing": {
+        "message": "Done"
+    },
+    "searchRegionPlaceholder": {
+        "message": "Search country, region, or code"
+    },
+    "regionFilterAria": {
+        "message": "Filter fixed region by location"
+    },
+    "fixedRegionGridAria": {
+        "message": "Fixed region"
+    },
+    "showAllRegions": {
+        "message": "Show all $COUNT$ regions",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "collapseRegions": {
+        "message": "Collapse regions"
+    },
+    "quickJumpTitle": {
+        "message": "Quick Jump"
+    },
+    "quickSettingsTitle": {
+        "message": "Jump settings"
+    },
+    "openCurrentTab": {
+        "message": "Open in current tab"
+    },
+    "openNewTab": {
+        "message": "Open in new tab"
+    },
+    "quickFilterAria": {
+        "message": "Filter quick jump regions by location"
+    },
+    "quickGridAria": {
+        "message": "Quick jump regions"
+    },
+    "noMatchingRegion": {
+        "message": "No matching regions"
+    },
+    "currentFixedRegionAria": {
+        "message": "Current fixed region: $REGION$",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "invalidRegionCode": {
+        "message": "Enter a two-letter region code, for example tw"
+    },
+    "notAppStoreAppLink": {
+        "message": "The current tab is not an App Store app link"
+    },
+    "regionFilterAll": {
+        "message": "All"
+    },
+    "regionFilterAsiaPacific": {
+        "message": "Asia Pacific"
+    },
+    "regionFilterUsaCanada": {
+        "message": "USA/Canada"
+    },
+    "regionFilterEurope": {
+        "message": "Europe"
+    },
+    "regionFilterLatinAmericaCaribbean": {
+        "message": "Latin America/Caribbean"
+    },
+    "regionFilterAfricaMiddleEastIndia": {
+        "message": "Africa/Middle East/India"
     }
 }

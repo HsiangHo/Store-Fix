@@ -1,15 +1,360 @@
 :root {
-    color-scheme: light dark;
+    color-scheme: dark;
+    --background: #151618;
+    --panel: #202124;
+    --panel-border: #303134;
+    --chip: #303134;
+    --chip-hover: #3b3d41;
+    --chip-selected: #475a7c;
+    --text: #f2f3f5;
+    --secondary-text: #a7abb3;
+    --muted-text: #7d828b;
+    --accent: #8ab4f8;
+    --error: #ff8a80;
 }
 
 body {
-    width: 100px;
-    padding: 10px;
-
-    font-family: system-ui;
-    text-align: center;
+    width: 430px;
+    max-height: 560px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--background);
+    color: var(--text);
+    font: 14px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    /* Dark Mode styles go here. */
+button,
+input {
+    font: inherit;
+}
+
+button {
+    color: inherit;
+    cursor: pointer;
+}
+
+.popup {
+    display: grid;
+    gap: 12px;
+    max-height: 560px;
+    box-sizing: border-box;
+    padding: 12px;
+    overflow: auto;
+}
+
+.section {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    background: var(--panel);
+}
+
+.section-toggle {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 10px;
+    min-height: 28px;
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.section-toggle input {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.section-toggle span {
+    overflow-wrap: anywhere;
+}
+
+.region-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.region-chip,
+.jump-chip,
+.filter-row button,
+.more-button,
+.text-button,
+.settings-menu button {
+    border: 0;
+    background: var(--chip);
+}
+
+.region-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.region-chip:hover,
+.jump-chip:hover,
+.filter-row button:hover,
+.more-button:hover,
+.text-button:hover,
+.settings-menu button:hover {
+    background: var(--chip-hover);
+}
+
+.region-chip[aria-checked="true"] {
+    background: var(--chip-selected);
+    box-shadow: inset 0 0 0 1px rgba(138, 180, 248, 0.45);
+}
+
+.flag {
+    display: inline-grid;
+    width: 24px;
+    place-items: center;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.search-field {
+    display: grid;
+    gap: 6px;
+}
+
+.compact-search {
+    margin-top: -2px;
+}
+
+.search-field span {
+    color: var(--secondary-text);
+    font-size: 12px;
+}
+
+.search-field input {
+    min-height: 36px;
+    box-sizing: border-box;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    outline: none;
+    background: #111214;
+    color: var(--text);
+    padding: 0 11px;
+}
+
+.search-field input:focus {
+    border-color: var(--accent);
+}
+
+.filter-row {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+
+.filter-row::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-row button {
+    flex: 0 0 auto;
+    min-height: 28px;
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--secondary-text);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.filter-row button[aria-selected="true"] {
+    background: var(--chip-selected);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(138, 180, 248, 0.35);
+}
+
+.more-button {
+    min-height: 34px;
+    border-radius: 10px;
+    color: var(--secondary-text);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.region-editor {
+    display: grid;
+    gap: 10px;
+}
+
+h1,
+p {
+    margin: 0;
+}
+
+h1 {
+    font-size: 17px;
+    line-height: 1.2;
+}
+
+.section-title-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.current-region {
+    flex: 0 0 auto;
+    color: var(--secondary-text);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.current-region-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    gap: 8px;
+}
+
+.text-button {
+    flex: 0 0 auto;
+    min-height: 28px;
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.settings-wrap {
+    position: relative;
+}
+
+.icon-button {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    background: var(--chip);
+    font-size: 16px;
+}
+
+.icon-button:hover,
+.icon-button[aria-expanded="true"] {
+    background: var(--chip-hover);
+}
+
+.settings-menu {
+    position: absolute;
+    z-index: 10;
+    top: 38px;
+    right: 0;
+    display: grid;
+    gap: 4px;
+    width: 156px;
+    padding: 6px;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: #111214;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42);
+}
+
+.settings-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+    border-radius: 8px;
+    padding: 0 9px;
+    text-align: left;
+}
+
+.settings-menu button[aria-checked="true"]::after {
+    color: var(--accent);
+    content: "✓";
+}
+
+.quick-grid {
+    column-count: 2;
+    column-gap: 8px;
+}
+
+.jump-chip {
+    display: inline-flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    gap: 9px;
+    box-sizing: border-box;
+    margin: 0 0 8px;
+    break-inside: avoid;
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.jump-name {
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.jump-code {
+    color: var(--muted-text);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.empty-state,
+#status {
+    color: var(--secondary-text);
+    font-size: 12px;
+}
+
+.empty-state {
+    padding: 8px 2px;
+}
+
+.region-grid .empty-state {
+    grid-column: 1 / -1;
+}
+
+#status {
+    padding: 0 4px;
+}
+
+#status:empty {
+    display: none;
+}
+
+#status.error {
+    color: var(--error);
+}
+
+[hidden] {
+    display: none;
 }

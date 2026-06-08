@@ -1,11 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="popup.css">
+    <script src="store-regions.js"></script>
+    <script src="app-store-url.js"></script>
     <script type="module" src="popup.js"></script>
 </head>
 <body>
-    <strong>Hello World!</strong>
+    <main class="popup">
+        <section class="section">
+            <div class="section-title-row">
+                <label class="section-toggle">
+                    <input id="enabled" type="checkbox">
+                    <span id="fixed-region-label">Fix country or region</span>
+                </label>
+                <div class="current-region-wrap">
+                    <p id="current-region" class="current-region" aria-label="Current fixed region: CN">🇨🇳 CN</p>
+                    <button class="text-button" id="region-edit-toggle" type="button" aria-expanded="false" aria-controls="region-editor">Edit</button>
+                </div>
+            </div>
+
+            <div id="region-editor" class="region-editor" hidden>
+                <label class="search-field compact-search" for="region-search">
+                    <input id="region-search" type="search" aria-label="Search country, region, or code" placeholder="Search country, region, or code">
+                </label>
+
+                <div id="region-filter" class="filter-row" role="tablist" aria-label="Filter fixed region by location"></div>
+                <div id="region-grid" class="region-grid" role="radiogroup" aria-label="Fixed region"></div>
+                <button class="more-button" id="region-more" type="button">Show all regions</button>
+            </div>
+        </section>
+
+        <section class="section quick-section" hidden>
+            <div class="section-title-row">
+                <h1 id="quick-jump-title">Quick Jump</h1>
+                <div class="settings-wrap">
+                    <button class="icon-button" id="quick-settings" type="button" aria-expanded="false" aria-controls="quick-menu" title="Jump settings" aria-label="Jump settings">⚙</button>
+                    <div class="settings-menu" id="quick-menu" role="menu" hidden>
+                        <button type="button" role="menuitemradio" data-open-mode="current-tab">Open in current tab</button>
+                        <button type="button" role="menuitemradio" data-open-mode="new-tab">Open in new tab</button>
+                    </div>
+                </div>
+            </div>
+
+            <label class="search-field" for="quick-search">
+                <input id="quick-search" type="search" aria-label="Search country, region, or code" placeholder="Search country, region, or code">
+            </label>
+
+            <div id="quick-filter" class="filter-row" role="tablist" aria-label="Filter quick jump regions by location"></div>
+            <div id="quick-grid" class="quick-grid" aria-label="Quick jump regions"></div>
+            <button class="more-button" id="quick-more" type="button">Show all regions</button>
+        </section>
+
+        <p id="status" role="status"></p>
+    </main>
 </body>
 </html>

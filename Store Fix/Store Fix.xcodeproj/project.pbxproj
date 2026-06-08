@@ -110,6 +110,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/_locales,
+				"Resources/app-store-url.js",
 				Resources/background.js,
 				Resources/content.js,
 				Resources/images,
@@ -117,6 +118,7 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				Resources/store-regions.js,
 				SafariWebExtensionHandler.swift,
 			);
 			target = 981C18612FD71081007DC070 /* Store Fix Extension (iOS) */;
@@ -125,6 +127,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/_locales,
+				"Resources/app-store-url.js",
 				Resources/background.js,
 				Resources/content.js,
 				Resources/images,
@@ -132,6 +135,7 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				Resources/store-regions.js,
 				SafariWebExtensionHandler.swift,
 			);
 			target = 981C186B2FD71081007DC070 /* Store Fix Extension (macOS) */;

@@ -1,0 +1,92 @@
+{
+    "extension_name": {
+        "message": "Store Fix",
+        "description": "擴充功能顯示名稱。"
+    },
+    "extension_description": {
+        "message": "將 App Store app 連結重新導向到你選擇的商店地區。",
+        "description": "擴充功能說明。"
+    },
+    "fixedRegionLabel": {
+        "message": "固定國家或地區"
+    },
+    "editRegion": {
+        "message": "修改"
+    },
+    "doneEditing": {
+        "message": "完成"
+    },
+    "searchRegionPlaceholder": {
+        "message": "搜尋國家、地區或代碼"
+    },
+    "regionFilterAria": {
+        "message": "依位置篩選固定地區"
+    },
+    "fixedRegionGridAria": {
+        "message": "固定地區"
+    },
+    "showAllRegions": {
+        "message": "顯示全部 $COUNT$ 個地區",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "collapseRegions": {
+        "message": "收起地區"
+    },
+    "quickJumpTitle": {
+        "message": "快速跳轉"
+    },
+    "quickSettingsTitle": {
+        "message": "跳轉設定"
+    },
+    "openCurrentTab": {
+        "message": "在目前標籤頁開啟"
+    },
+    "openNewTab": {
+        "message": "在新標籤頁開啟"
+    },
+    "quickFilterAria": {
+        "message": "依位置篩選快速跳轉地區"
+    },
+    "quickGridAria": {
+        "message": "快速跳轉地區"
+    },
+    "noMatchingRegion": {
+        "message": "沒有相符的地區"
+    },
+    "currentFixedRegionAria": {
+        "message": "目前固定地區：$REGION$",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "invalidRegionCode": {
+        "message": "請輸入兩位地區代碼，例如 tw"
+    },
+    "notAppStoreAppLink": {
+        "message": "目前標籤頁不是 App Store app 連結"
+    },
+    "regionFilterAll": {
+        "message": "全部"
+    },
+    "regionFilterAsiaPacific": {
+        "message": "亞太"
+    },
+    "regionFilterUsaCanada": {
+        "message": "美國/加拿大"
+    },
+    "regionFilterEurope": {
+        "message": "歐洲"
+    },
+    "regionFilterLatinAmericaCaribbean": {
+        "message": "拉丁美洲/加勒比"
+    },
+    "regionFilterAfricaMiddleEastIndia": {
+        "message": "非洲/中東/印度"
+    }
+}
