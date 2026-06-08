@@ -118,7 +118,7 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
-				Resources/store-regions.js,
+				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
 			target = 981C18612FD71081007DC070 /* Store Fix Extension (iOS) */;
@@ -135,7 +135,7 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
-				Resources/store-regions.js,
+				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
 			target = 981C186B2FD71081007DC070 /* Store Fix Extension (macOS) */;

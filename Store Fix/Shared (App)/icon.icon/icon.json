@@ -1,0 +1,97 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.95068,0.69922,0.24316,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:0.96783,0.96059,0.93976,1.00000"
+          },
+          "image-name" : "link.circle.fill.png",
+          "name" : "link.circle.fill",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              33.99354684121181,
+              -31.441132735540236
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "solid" : "display-p3:0.00000,0.00000,0.00000,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "􀎡.png",
+          "name" : "􀎡",
+          "opacity" : 0.56,
+          "position" : {
+            "scale" : 1.4,
+            "translation-in-points" : [
+              33.99354684121181,
+              -77.44520469137024
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "blend-mode" : "overlay",
+          "fill" : {
+            "linear-gradient" : [
+              "display-p3:0.94517,1.00000,0.99274,1.00000",
+              "display-p3:0.96783,0.57408,0.12603,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : 0.5,
+                "y" : 0
+              },
+              "stop" : {
+                "x" : 0.8171462217320358,
+                "y" : 1
+              }
+            }
+          },
+          "glass" : true,
+          "image-name" : "Artboard 2.png",
+          "name" : "Artboard 2",
+          "position" : {
+            "scale" : 0.45,
+            "translation-in-points" : [
+              -17.99193993671338,
+              5.5812129476641985
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
