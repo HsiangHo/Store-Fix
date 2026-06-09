@@ -8,6 +8,7 @@
         forceOpenMode: "off",
         forceNewWindow: false,
         manualJumpUrl: "",
+        manualJumpRegion: "",
         manualJumpExpiresAt: 0,
         regionUsageCounts: {}
     });
@@ -54,6 +55,7 @@
             forceOpenMode,
             forceNewWindow: forceOpenMode === "new-window",
             manualJumpUrl: typeof settings.manualJumpUrl === "string" ? settings.manualJumpUrl : "",
+            manualJumpRegion: sanitizeRegion(settings.manualJumpRegion),
             manualJumpExpiresAt,
             regionUsageCounts
         };
@@ -75,6 +77,11 @@
             : segments;
 
         return [targetRegion, ...pathSegments];
+    }
+
+    function getUrlRegion(url) {
+        const segments = url.pathname.split("/").filter(Boolean);
+        return sanitizeRegion(segments[0]);
     }
 
     function parseAppStoreUrl(rawUrl, baseUrl) {
@@ -140,7 +147,18 @@
             return false;
         }
 
-        return currentUrl === normalizedSettings.manualJumpUrl;
+        if (currentUrl === normalizedSettings.manualJumpUrl)
+            return true;
+
+        if (!normalizedSettings.manualJumpRegion)
+            return false;
+
+        const appStoreUrl = parseAppStoreUrl(currentUrl);
+
+        if (!appStoreUrl)
+            return false;
+
+        return getUrlRegion(appStoreUrl) === normalizedSettings.manualJumpRegion;
     }
 
     globalThis.StoreFixUrl = Object.freeze({

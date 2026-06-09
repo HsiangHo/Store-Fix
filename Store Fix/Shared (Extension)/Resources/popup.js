@@ -482,7 +482,16 @@ async function saveSettings() {
     }
 
     settings = formSettings;
-    await extensionApi.storage.local.set(settings);
+    await extensionApi.storage.local.set({
+        enabled: settings.enabled,
+        mode: settings.mode,
+        region: settings.region,
+        customRegion: settings.customRegion,
+        quickOpenMode: settings.quickOpenMode,
+        forceOpenMode: settings.forceOpenMode,
+        forceNewWindow: settings.forceNewWindow,
+        regionUsageCounts: settings.regionUsageCounts
+    });
     renderSettings(settings);
     clearStatus();
     return true;

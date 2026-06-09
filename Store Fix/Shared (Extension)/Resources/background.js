@@ -78,9 +78,10 @@ async function fixCurrentTab() {
     return redirectTab(activeTab.id, activeTab.url);
 }
 
-async function setManualJumpBypass(url) {
+async function setManualJumpBypass(url, region = "") {
     await extensionApi.storage.local.set({
         manualJumpUrl: url,
+        manualJumpRegion: sanitizeRegion(region),
         manualJumpExpiresAt: Date.now() + 15000
     });
 
@@ -111,7 +112,7 @@ async function openQuickJump(region, openMode) {
     if (!targetUrl)
         return { changed: false };
 
-    await setManualJumpBypass(targetUrl);
+    await setManualJumpBypass(targetUrl, targetRegion);
 
     const openUrl = currentSettings.forceOpenMode === "off"
         ? targetUrl
