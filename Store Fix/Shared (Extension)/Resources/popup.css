@@ -74,6 +74,60 @@ button {
     overflow-wrap: anywhere;
 }
 
+.setting-row {
+    display: grid;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--panel-border);
+}
+
+.setting-heading-row {
+    display: grid;
+    gap: 8px;
+}
+
+.setting-heading-row > span {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.setting-description {
+    color: var(--secondary-text);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.segmented-control {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding: 2px;
+    border-radius: 10px;
+    background: #111214;
+}
+
+.segmented-control button {
+    min-height: 28px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--secondary-text);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.segmented-control button:hover {
+    background: var(--chip-hover);
+    color: var(--text);
+}
+
+.segmented-control button[aria-checked="true"] {
+    background: var(--chip-selected);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(138, 180, 248, 0.35);
+}
+
 .region-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

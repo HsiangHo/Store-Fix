@@ -31,12 +31,17 @@ const FALLBACK_MESSAGES = Object.freeze({
     quickSettingsTitle: "Jump settings",
     openCurrentTab: "Open in current tab",
     openNewTab: "Open in new tab",
+    forceOpenModeLabel: "Force App Store links to open in Safari",
+    forceOpenModeDescription: "Open apps.apple.com links in Safari instead of handing them to App Store.",
+    forceOpenOff: "Off",
+    forceOpenNewWindow: "Window",
+    forceOpenNewTab: "Tab",
     quickFilterAria: "Filter quick jump regions by location",
     quickGridAria: "Quick jump regions",
     noMatchingRegion: "No matching regions",
     currentFixedRegionAria: "Current fixed region: $1",
     invalidRegionCode: "Enter a two-letter region code, for example tw",
-    notAppStoreAppLink: "The current tab is not an App Store app link",
+    notAppStoreAppLink: "The current tab is not an App Store link",
     regionFilterAll: "All",
     regionFilterAsiaPacific: "Asia Pacific",
     regionFilterUsaCanada: "USA/Canada",
@@ -46,6 +51,9 @@ const FALLBACK_MESSAGES = Object.freeze({
 });
 
 const enabledInput = document.querySelector("#enabled");
+const forceOpenMode = document.querySelector("#force-open-mode");
+const forceOpenModeLabel = document.querySelector("#force-open-mode-label");
+const forceOpenModeDescription = document.querySelector("#force-open-mode-description");
 const fixedRegionLabel = document.querySelector("#fixed-region-label");
 const currentRegionOutput = document.querySelector("#current-region");
 const regionEditor = document.querySelector("#region-editor");
@@ -109,6 +117,12 @@ function applyLocalization() {
 
     document.documentElement.lang = NORMALIZED_UI_LOCALE;
     fixedRegionLabel.textContent = getMessage("fixedRegionLabel");
+    forceOpenModeLabel.textContent = getMessage("forceOpenModeLabel");
+    forceOpenModeDescription.textContent = getMessage("forceOpenModeDescription");
+    forceOpenMode.setAttribute("aria-label", getMessage("forceOpenModeLabel"));
+    forceOpenMode.querySelector("[data-force-open-mode='off']").textContent = getMessage("forceOpenOff");
+    forceOpenMode.querySelector("[data-force-open-mode='new-window']").textContent = getMessage("forceOpenNewWindow");
+    forceOpenMode.querySelector("[data-force-open-mode='new-tab']").textContent = getMessage("forceOpenNewTab");
     regionSearchInput.placeholder = searchLabel;
     regionSearchInput.setAttribute("aria-label", searchLabel);
     regionFilter.setAttribute("aria-label", getMessage("regionFilterAria"));
@@ -415,11 +429,19 @@ function renderOpenModeMenu() {
     });
 }
 
+function renderForceOpenMode() {
+    forceOpenMode.querySelectorAll("[data-force-open-mode]").forEach((button) => {
+        const isSelected = button.dataset.forceOpenMode === settings.forceOpenMode;
+        button.setAttribute("aria-checked", String(isSelected));
+    });
+}
+
 function renderSettings(nextSettings = settings) {
     settings = normalizeSettings(nextSettings);
     enabledInput.checked = settings.enabled;
 
     renderOpenModeMenu();
+    renderForceOpenMode();
 
     const targetRegion = getTargetRegion(settings);
     const region = selectedRegion();
@@ -523,6 +545,17 @@ async function loadSettings() {
 }
 
 enabledInput.addEventListener("change", queueSave);
+
+forceOpenMode.querySelectorAll("[data-force-open-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+        settings = normalizeSettings({
+            ...settings,
+            forceOpenMode: button.dataset.forceOpenMode
+        });
+        renderForceOpenMode();
+        queueSave();
+    });
+});
 
 regionSearchInput.addEventListener("input", renderRegionSelector);
 

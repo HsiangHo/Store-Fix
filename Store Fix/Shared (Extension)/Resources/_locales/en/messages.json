@@ -4,7 +4,7 @@
         "description": "The display name for the extension."
     },
     "extension_description": {
-        "message": "Redirect App Store app links to your selected storefront region.",
+        "message": "Redirect App Store links to your selected storefront region.",
         "description": "Description of what the extension does."
     },
     "fixedRegionLabel": {
@@ -48,6 +48,21 @@
     "openNewTab": {
         "message": "Open in new tab"
     },
+    "forceOpenModeLabel": {
+        "message": "Force App Store links to open in Safari"
+    },
+    "forceOpenModeDescription": {
+        "message": "Open apps.apple.com links in Safari instead of handing them to App Store."
+    },
+    "forceOpenOff": {
+        "message": "Off"
+    },
+    "forceOpenNewWindow": {
+        "message": "Window"
+    },
+    "forceOpenNewTab": {
+        "message": "Tab"
+    },
     "quickFilterAria": {
         "message": "Filter quick jump regions by location"
     },
@@ -69,7 +84,7 @@
         "message": "Enter a two-letter region code, for example tw"
     },
     "notAppStoreAppLink": {
-        "message": "The current tab is not an App Store app link"
+        "message": "The current tab is not an App Store link"
     },
     "regionFilterAll": {
         "message": "All"

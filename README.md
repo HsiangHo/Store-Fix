@@ -1,6 +1,6 @@
 # Store Fix
 
-Store Fix is a Safari Web Extension that keeps App Store app links on the storefront region you choose.
+Store Fix is a Safari Web Extension that keeps App Store links on the storefront region you choose.
 
 Examples with the default `cn` region:
 
@@ -9,11 +9,12 @@ Examples with the default `cn` region:
 - `https://apps.apple.com/app/id414478124`
   becomes `https://apps.apple.com/cn/app/id414478124`
 
-It also handles direct address bar navigation, so typing or pasting an App Store app URL in Safari is redirected the same way as clicking a link.
+It also handles direct address bar navigation, so typing or pasting an App Store URL in Safari is redirected the same way as clicking a link.
 
 ## Features
 
-- Fix App Store app links to one selected country or region.
+- Fix App Store links to one selected country or region.
+- Optionally force clicked App Store links to open in a new Safari window or tab instead of launching App Store.
 - Choose from the bundled App Store storefront list, including common regions such as `cn`, `hk`, `jp`, `us`, and `ca`.
 - Search regions by country name, localized name, or two-letter region code.
 - Filter the region list by area, including Asia Pacific, USA/Canada, Europe, Latin America/Caribbean, and Africa/Middle East/India.

@@ -1,6 +1,7 @@
 const extensionApi = globalThis.browser ?? globalThis.chrome;
 const {
     DEFAULT_SETTINGS,
+    getForcedAppStoreUrl,
     normalizeSettings,
     rewriteAppStoreUrl,
     sanitizeRegion,
@@ -28,11 +29,37 @@ async function getRedirectUrl(url) {
     return rewriteAppStoreUrl(url, currentSettings);
 }
 
+function getForceOpenUrl(targetUrl) {
+    return extensionApi.runtime.getURL(`force-open.html?url=${encodeURIComponent(targetUrl)}`);
+}
+
+async function getNavigationRedirectUrl(url) {
+    await settingsReady;
+
+    if (!currentSettings.enabled)
+        return null;
+
+    if (shouldBypassAutoRedirect(url, currentSettings))
+        return null;
+
+    if (currentSettings.forceOpenMode !== "off") {
+        const targetUrl = getForcedAppStoreUrl(url, currentSettings);
+
+        if (!targetUrl)
+            return null;
+
+        await setManualJumpBypass(targetUrl);
+        return getForceOpenUrl(targetUrl);
+    }
+
+    return rewriteAppStoreUrl(url, currentSettings);
+}
+
 async function redirectTab(tabId, url) {
     if (typeof tabId !== "number" || tabId < 0)
         return { changed: false };
 
-    const redirectUrl = await getRedirectUrl(url);
+    const redirectUrl = await getNavigationRedirectUrl(url);
 
     if (!redirectUrl || redirectUrl === url)
         return { changed: false };
@@ -86,18 +113,59 @@ async function openQuickJump(region, openMode) {
 
     await setManualJumpBypass(targetUrl);
 
+    const openUrl = currentSettings.forceOpenMode === "off"
+        ? targetUrl
+        : getForceOpenUrl(targetUrl);
+
     if (openMode === "new-tab") {
         const newTab = await extensionApi.tabs.create({
             active: true,
             index: activeTab.index + 1,
-            url: targetUrl
+            url: openUrl
         });
 
         return { changed: true, tabId: newTab.id, url: targetUrl };
     }
 
-    await extensionApi.tabs.update(activeTab.id, { url: targetUrl });
+    await extensionApi.tabs.update(activeTab.id, { url: openUrl });
     return { changed: true, tabId: activeTab.id, url: targetUrl };
+}
+
+async function openForcedAppStoreLink(url) {
+    await settingsReady;
+
+    if (!currentSettings.enabled || currentSettings.forceOpenMode === "off")
+        return { changed: false };
+
+    const targetUrl = getForcedAppStoreUrl(url, currentSettings);
+
+    if (!targetUrl)
+        return { changed: false };
+
+    await setManualJumpBypass(targetUrl);
+
+    const forceOpenUrl = getForceOpenUrl(targetUrl);
+
+    if (currentSettings.forceOpenMode === "new-window" && extensionApi.windows?.create) {
+        try {
+            const createdWindow = await extensionApi.windows.create({
+                focused: true,
+                type: "normal",
+                url: forceOpenUrl
+            });
+
+            return { changed: true, windowId: createdWindow?.id, url: targetUrl };
+        } catch (error) {
+            console.warn("Store Fix could not open a new window; falling back to a new tab:", error);
+        }
+    }
+
+    const createdTab = await extensionApi.tabs.create({
+        active: true,
+        url: forceOpenUrl
+    });
+
+    return { changed: true, tabId: createdTab.id, url: targetUrl };
 }
 
 extensionApi.runtime.onInstalled.addListener(() => {
@@ -134,6 +202,9 @@ extensionApi.runtime.onMessage.addListener((request) => {
 
     if (request?.type === "store-fix-open-quick-jump")
         return openQuickJump(request.region, request.openMode);
+
+    if (request?.type === "store-fix-open-forced-window")
+        return openForcedAppStoreLink(request.url);
 
     return undefined;
 });

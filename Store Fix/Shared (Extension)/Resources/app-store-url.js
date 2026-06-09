@@ -5,6 +5,8 @@
         region: "cn",
         customRegion: "",
         quickOpenMode: "current-tab",
+        forceOpenMode: "off",
+        forceNewWindow: false,
         manualJumpUrl: "",
         manualJumpExpiresAt: 0,
         regionUsageCounts: {}
@@ -13,6 +15,7 @@
     const PRESET_REGIONS = Object.freeze(globalThis.StoreFixRegions?.REGION_CODES ?? ["cn", "hk", "jp", "us", "ca"]);
     const REGION_PATTERN = /^[a-z]{2}$/;
     const APP_STORE_HOST = "apps.apple.com";
+    const FORCE_OPEN_MODES = new Set(["off", "new-window", "new-tab"]);
 
     function sanitizeRegion(value) {
         if (typeof value !== "string")
@@ -29,6 +32,9 @@
         const manualJumpExpiresAt = Number.isFinite(settings.manualJumpExpiresAt)
             ? settings.manualJumpExpiresAt
             : DEFAULT_SETTINGS.manualJumpExpiresAt;
+        const forceOpenMode = FORCE_OPEN_MODES.has(settings.forceOpenMode)
+            ? settings.forceOpenMode
+            : (settings.forceNewWindow === true ? "new-window" : DEFAULT_SETTINGS.forceOpenMode);
         const regionUsageCounts = Object.entries(settings.regionUsageCounts ?? {}).reduce((counts, [code, count]) => {
             const region = sanitizeRegion(code);
             const normalizedCount = Number(count);
@@ -45,6 +51,8 @@
             region,
             customRegion,
             quickOpenMode: settings.quickOpenMode === "new-tab" ? "new-tab" : "current-tab",
+            forceOpenMode,
+            forceNewWindow: forceOpenMode === "new-window",
             manualJumpUrl: typeof settings.manualJumpUrl === "string" ? settings.manualJumpUrl : "",
             manualJumpExpiresAt,
             regionUsageCounts
@@ -60,19 +68,16 @@
         return normalizedSettings.region;
     }
 
-    function getAppPathSegments(pathname) {
+    function getRegionalPathSegments(pathname, targetRegion) {
         const segments = pathname.split("/").filter(Boolean);
+        const pathSegments = REGION_PATTERN.test((segments[0] ?? "").toLowerCase())
+            ? segments.slice(1)
+            : segments;
 
-        if (segments[0]?.toLowerCase() === "app")
-            return segments;
-
-        if (REGION_PATTERN.test((segments[0] ?? "").toLowerCase()) && segments[1]?.toLowerCase() === "app")
-            return segments.slice(1);
-
-        return null;
+        return [targetRegion, ...pathSegments];
     }
 
-    function rewriteAppStoreUrl(rawUrl, settings = DEFAULT_SETTINGS, baseUrl) {
+    function parseAppStoreUrl(rawUrl, baseUrl) {
         let url;
 
         try {
@@ -87,16 +92,38 @@
         if (url.protocol !== "https:" && url.protocol !== "http:")
             return null;
 
-        const targetRegion = getTargetRegion(settings);
-        const appPathSegments = getAppPathSegments(url.pathname);
+        url.protocol = "https:";
+        return url;
+    }
 
-        if (!targetRegion || !appPathSegments)
+    function normalizeAppStorePageUrl(rawUrl, baseUrl) {
+        const url = parseAppStoreUrl(rawUrl, baseUrl);
+        return url?.toString() ?? null;
+    }
+
+    function rewriteAppStoreUrl(rawUrl, settings = DEFAULT_SETTINGS, baseUrl) {
+        const url = parseAppStoreUrl(rawUrl, baseUrl);
+
+        if (!url)
             return null;
 
-        url.protocol = "https:";
-        url.pathname = `/${[targetRegion, ...appPathSegments].join("/")}`;
+        const targetRegion = getTargetRegion(settings);
+
+        if (!targetRegion)
+            return null;
+
+        url.pathname = `/${getRegionalPathSegments(url.pathname, targetRegion).join("/")}`;
 
         return url.toString();
+    }
+
+    function getForcedAppStoreUrl(rawUrl, settings = DEFAULT_SETTINGS, baseUrl) {
+        const normalizedUrl = normalizeAppStorePageUrl(rawUrl, baseUrl);
+
+        if (!normalizedUrl)
+            return null;
+
+        return rewriteAppStoreUrl(normalizedUrl, settings) ?? normalizedUrl;
     }
 
     function shouldBypassAutoRedirect(rawUrl, settings = DEFAULT_SETTINGS) {
@@ -119,7 +146,9 @@
     globalThis.StoreFixUrl = Object.freeze({
         DEFAULT_SETTINGS,
         PRESET_REGIONS,
+        getForcedAppStoreUrl,
         getTargetRegion,
+        normalizeAppStorePageUrl,
         normalizeSettings,
         rewriteAppStoreUrl,
         sanitizeRegion,

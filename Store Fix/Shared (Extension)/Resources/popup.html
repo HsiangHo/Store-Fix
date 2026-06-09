@@ -30,6 +30,18 @@
                 <div id="region-grid" class="region-grid" role="radiogroup" aria-label="Fixed region"></div>
                 <button class="more-button" id="region-more" type="button">Show all regions</button>
             </div>
+
+            <div class="setting-row">
+                <div class="setting-heading-row">
+                    <span id="force-open-mode-label">Force App Store links to open in Safari</span>
+                    <div class="segmented-control" id="force-open-mode" role="radiogroup" aria-label="Force App Store links to open in Safari">
+                        <button type="button" role="radio" data-force-open-mode="off">Off</button>
+                        <button type="button" role="radio" data-force-open-mode="new-window">Window</button>
+                        <button type="button" role="radio" data-force-open-mode="new-tab">Tab</button>
+                    </div>
+                </div>
+                <p id="force-open-mode-description" class="setting-description">Open apps.apple.com links in Safari instead of handing them to App Store.</p>
+            </div>
         </section>
 
         <section class="section quick-section" hidden>

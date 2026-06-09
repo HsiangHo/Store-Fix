@@ -4,7 +4,7 @@
         "description": "擴充功能顯示名稱。"
     },
     "extension_description": {
-        "message": "將 App Store app 連結重新導向到你選擇的商店地區。",
+        "message": "將 App Store 連結重新導向到你選擇的商店地區。",
         "description": "擴充功能說明。"
     },
     "fixedRegionLabel": {
@@ -48,6 +48,21 @@
     "openNewTab": {
         "message": "在新標籤頁開啟"
     },
+    "forceOpenModeLabel": {
+        "message": "強制在 Safari 開啟"
+    },
+    "forceOpenModeDescription": {
+        "message": "開啟 apps.apple.com 連結時留在 Safari 網頁中，避免喚起 App Store。"
+    },
+    "forceOpenOff": {
+        "message": "關閉"
+    },
+    "forceOpenNewWindow": {
+        "message": "新視窗"
+    },
+    "forceOpenNewTab": {
+        "message": "新標籤"
+    },
     "quickFilterAria": {
         "message": "依位置篩選快速跳轉地區"
     },
@@ -69,7 +84,7 @@
         "message": "請輸入兩位地區代碼，例如 tw"
     },
     "notAppStoreAppLink": {
-        "message": "目前標籤頁不是 App Store app 連結"
+        "message": "目前標籤頁不是 App Store 連結"
     },
     "regionFilterAll": {
         "message": "全部"

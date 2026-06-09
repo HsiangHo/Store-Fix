@@ -4,7 +4,7 @@
         "description": "扩展显示名称。"
     },
     "extension_description": {
-        "message": "将 App Store app 链接重定向到你选择的商店区域。",
+        "message": "将 App Store 链接重定向到你选择的商店区域。",
         "description": "扩展功能说明。"
     },
     "fixedRegionLabel": {
@@ -48,6 +48,21 @@
     "openNewTab": {
         "message": "新标签页打开"
     },
+    "forceOpenModeLabel": {
+        "message": "强制在 Safari 打开"
+    },
+    "forceOpenModeDescription": {
+        "message": "打开 apps.apple.com 链接时留在 Safari 网页中，避免拉起 App Store。"
+    },
+    "forceOpenOff": {
+        "message": "关闭"
+    },
+    "forceOpenNewWindow": {
+        "message": "新窗口"
+    },
+    "forceOpenNewTab": {
+        "message": "新标签"
+    },
     "quickFilterAria": {
         "message": "按位置筛选快速跳转区域"
     },
@@ -69,7 +84,7 @@
         "message": "请输入两位区域代码，例如 tw"
     },
     "notAppStoreAppLink": {
-        "message": "当前标签页不是 App Store app 链接"
+        "message": "当前标签页不是 App Store 链接"
     },
     "regionFilterAll": {
         "message": "全部"
