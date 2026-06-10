@@ -2,8 +2,7 @@ const extensionApi = globalThis.browser ?? globalThis.chrome;
 const {
     DEFAULT_SETTINGS,
     getTargetRegion,
-    normalizeSettings,
-    rewriteAppStoreUrl
+    normalizeSettings
 } = globalThis.StoreFixUrl;
 
 const {
@@ -400,20 +399,12 @@ function renderQuickRegions() {
     });
 }
 
-function isQuickJumpUrl(url) {
-    return Boolean(rewriteAppStoreUrl(url, {
-        ...DEFAULT_SETTINGS,
-        enabled: true,
-        mode: "preset",
-        region: "us",
-        customRegion: ""
-    }));
-}
-
 async function updateQuickSectionVisibility() {
-    const tabs = await extensionApi.tabs.query({ active: true, currentWindow: true });
-    const activeTabUrl = tabs[0]?.url ?? "";
-    canQuickJump = isQuickJumpUrl(activeTabUrl);
+    const context = await extensionApi.runtime.sendMessage({
+        type: "store-fix-get-quick-jump-context"
+    });
+
+    canQuickJump = context?.canJump === true;
     quickSection.hidden = !canQuickJump;
 
     if (canQuickJump)

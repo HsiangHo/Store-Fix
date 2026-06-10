@@ -86,6 +86,29 @@ function isTargetRegionUrl(rawUrl) {
     return Boolean(targetRegion) && appStoreRegion(rawUrl) === targetRegion;
 }
 
+function getManualJumpRegion() {
+    const settings = normalizeSettings(currentSettings);
+
+    if (!settings.manualJumpRegion || settings.manualJumpExpiresAt < Date.now())
+        return "";
+
+    return settings.manualJumpRegion;
+}
+
+function getNavigationSettings(url) {
+    const manualJumpRegion = getManualJumpRegion();
+
+    if (!manualJumpRegion || !parseAppStoreNavigationUrl(url))
+        return currentSettings;
+
+    return {
+        ...currentSettings,
+        mode: "preset",
+        region: manualJumpRegion,
+        customRegion: ""
+    };
+}
+
 function getRedirectAttemptTabKey(tabId) {
     return `tab:${tabId}`;
 }
@@ -179,6 +202,64 @@ async function getRememberedRedirectTarget(tabId, candidateTargetUrl) {
     return getRememberedRedirectIntent(attempts[tabKey], targetRegion, now)
         || getRememberedRedirectIntent(attempts[globalKey], targetRegion, now)
         || candidateTargetUrl;
+}
+
+function getValidRememberedIntent(attempt, now) {
+    if (typeof attempt?.intendedUrl !== "string" || !attempt.intendedUrl)
+        return "";
+
+    if (now - (attempt.intendedUpdatedAt ?? 0) > REDIRECT_INTENT_WINDOW_MS)
+        return "";
+
+    return parseAppStoreNavigationUrl(attempt.intendedUrl)?.toString() ?? "";
+}
+
+async function getRememberedQuickJumpSource(tabId, activeTabUrl) {
+    const activeUrl = parseAppStoreNavigationUrl(activeTabUrl);
+    const attempts = await getRedirectAttempts();
+    const now = Date.now();
+    const rememberedUrl = getValidRememberedIntent(attempts[getRedirectAttemptTabKey(tabId)], now);
+
+    if (!rememberedUrl)
+        return "";
+
+    if (!activeUrl)
+        return rememberedUrl;
+
+    return appStoreRegion(activeUrl.toString()) !== appStoreRegion(rememberedUrl)
+        ? rememberedUrl
+        : "";
+}
+
+function getRegionFailedTargetUrl(rawUrl) {
+    let url;
+    let failedPageUrl;
+
+    try {
+        url = new URL(rawUrl);
+        failedPageUrl = new URL(extensionApi.runtime.getURL("region-failed.html"));
+    } catch {
+        return "";
+    }
+
+    if (url.origin !== failedPageUrl.origin || url.pathname !== failedPageUrl.pathname)
+        return "";
+
+    return parseAppStoreNavigationUrl(url.searchParams.get("targetUrl") ?? "")?.toString() ?? "";
+}
+
+async function getQuickJumpSourceUrl(tabId, activeTabUrl) {
+    const failedTargetUrl = getRegionFailedTargetUrl(activeTabUrl);
+
+    if (failedTargetUrl)
+        return failedTargetUrl;
+
+    const rememberedUrl = await getRememberedQuickJumpSource(tabId, activeTabUrl);
+
+    if (rememberedUrl)
+        return rememberedUrl;
+
+    return parseAppStoreNavigationUrl(activeTabUrl)?.toString() ?? "";
 }
 
 function scheduleRedirectAttemptClear(tabId, targetRegion) {
@@ -276,22 +357,24 @@ async function getNavigationRedirect(tabId, url) {
     if (shouldBypassAutoRedirect(url, currentSettings))
         return null;
 
+    const navigationSettings = getNavigationSettings(url);
+
     if (currentSettings.forceOpenMode !== "off") {
-        const candidateTargetUrl = getForcedAppStoreUrl(url, currentSettings);
+        const candidateTargetUrl = getForcedAppStoreUrl(url, navigationSettings);
 
         if (!candidateTargetUrl)
             return null;
 
         const targetUrl = await getRememberedRedirectTarget(tabId, candidateTargetUrl);
         await rememberRedirectIntent(tabId, targetUrl);
-        await setManualJumpBypass(targetUrl, getTargetRegion(currentSettings));
+        await setManualJumpBypass(targetUrl, getTargetRegion(navigationSettings));
         return {
             targetUrl,
             url: getForceOpenUrl(targetUrl)
         };
     }
 
-    const candidateTargetUrl = rewriteAppStoreUrl(url, currentSettings);
+    const candidateTargetUrl = rewriteAppStoreUrl(url, navigationSettings);
 
     if (!candidateTargetUrl)
         return null;
@@ -359,7 +442,12 @@ async function openQuickJump(region, openMode) {
     if (typeof activeTab?.id !== "number" || !activeTab.url)
         return { changed: false };
 
-    const targetUrl = rewriteAppStoreUrl(activeTab.url, {
+    const sourceUrl = await getQuickJumpSourceUrl(activeTab.id, activeTab.url);
+
+    if (!sourceUrl)
+        return { changed: false };
+
+    const targetUrl = rewriteAppStoreUrl(sourceUrl, {
         ...currentSettings,
         enabled: true,
         mode: "preset",
@@ -390,6 +478,20 @@ async function openQuickJump(region, openMode) {
 
     await extensionApi.tabs.update(activeTab.id, { url: openUrl });
     return { changed: true, tabId: activeTab.id, url: targetUrl };
+}
+
+async function getQuickJumpContext() {
+    const tabs = await extensionApi.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+
+    if (typeof activeTab?.id !== "number" || !activeTab.url)
+        return { canJump: false, url: "" };
+
+    const sourceUrl = await getQuickJumpSourceUrl(activeTab.id, activeTab.url);
+    return {
+        canJump: Boolean(sourceUrl),
+        url: sourceUrl
+    };
 }
 
 async function openForcedAppStoreLink(url) {
@@ -531,6 +633,9 @@ extensionApi.runtime.onMessage.addListener((request, sender) => {
 
     if (request?.type === "store-fix-continue-source-region")
         return continueWithSourceRegion(sender, request.targetUrl, request.sourceRegion);
+
+    if (request?.type === "store-fix-get-quick-jump-context")
+        return getQuickJumpContext();
 
     if (request?.type === "store-fix-fix-current-tab")
         return fixCurrentTab();
