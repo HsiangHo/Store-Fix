@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <title>Store Fix</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        body {
+            align-items: center;
+            background: Canvas;
+            color: CanvasText;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        main {
+            box-sizing: border-box;
+            max-width: 560px;
+            padding: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            line-height: 1.2;
+            margin: 0 0 12px;
+        }
+
+        p {
+            color: color-mix(in srgb, CanvasText 72%, transparent);
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 0 0 16px;
+        }
+
+        code {
+            background: color-mix(in srgb, CanvasText 8%, transparent);
+            border-radius: 6px;
+            display: block;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+            padding: 12px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        button {
+            appearance: none;
+            background: LinkText;
+            border: 0;
+            border-radius: 8px;
+            color: Canvas;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+            min-height: 38px;
+            padding: 9px 14px;
+        }
+
+        button:hover {
+            filter: brightness(1.08);
+        }
+
+        button:disabled {
+            cursor: default;
+            filter: grayscale(0.4);
+            opacity: 0.65;
+        }
+    </style>
+    <script defer src="region-failed.js"></script>
+</head>
+<body>
+    <main>
+        <h1 id="heading">Cannot switch App Store region</h1>
+        <p id="description">Apple redirected this page back to your current region. Change your IP or choose another region.</p>
+        <code id="target-url"></code>
+        <div class="actions">
+            <button id="continue-button" type="button" hidden>Continue</button>
+        </div>
+    </main>
+</body>
+</html>

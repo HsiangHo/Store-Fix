@@ -86,6 +86,41 @@
     "notAppStoreAppLink": {
         "message": "目前標籤頁不是 App Store 連結"
     },
+    "redirectFailedTitle": {
+        "message": "無法開啟 $REGION$ 區 App Store",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedDescription": {
+        "message": "Apple 一直根據你的網路位置將頁面重新導向回 $CURRENT_REGION$。如果要存取 $TARGET_REGION$ 區，請更換 IP/VPN，或選擇其他 App Store 地區。",
+        "placeholders": {
+            "target_region": {
+                "content": "$1"
+            },
+            "current_region": {
+                "content": "$2"
+            }
+        }
+    },
+    "redirectFailedTargetUrl": {
+        "message": "目標 URL：$URL$",
+        "placeholders": {
+            "url": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedContinueButton": {
+        "message": "以 $REGION$ 區繼續瀏覽",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
     "regionFilterAll": {
         "message": "全部"
     },

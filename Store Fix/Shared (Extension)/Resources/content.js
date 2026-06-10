@@ -23,9 +23,6 @@ function getForcedHref(rawUrl) {
     if (!currentSettings.enabled || currentSettings.forceOpenMode === "off")
         return null;
 
-    if (shouldBypassAutoRedirect(rawUrl, currentSettings))
-        return null;
-
     return getForcedAppStoreUrl(rawUrl, currentSettings, document.baseURI);
 }
 
@@ -36,17 +33,27 @@ function rewriteAnchor(anchor) {
         anchor.href = rewrittenUrl;
 }
 
-function redirectCurrentPage() {
+async function redirectCurrentPage() {
     if (window.top !== window)
         return false;
 
     const rewrittenUrl = rewriteHref(window.location.href);
+    const forcedUrl = getForcedHref(window.location.href);
 
-    if (!rewrittenUrl || rewrittenUrl === window.location.href)
+    if ((!rewrittenUrl || rewrittenUrl === window.location.href) && !forcedUrl)
         return false;
 
-    window.location.replace(rewrittenUrl);
-    return true;
+    try {
+        const response = await extensionApi.runtime.sendMessage({
+            type: "store-fix-redirect-current-page",
+            url: window.location.href
+        });
+
+        return response?.changed === true;
+    } catch (error) {
+        console.error("Store Fix failed to redirect the current page:", error);
+        return false;
+    }
 }
 
 function rewriteAnchors(root = document) {
@@ -142,8 +149,8 @@ document.addEventListener("click", handlePossibleNavigation, true);
 document.addEventListener("auxclick", handlePossibleNavigation, true);
 document.addEventListener("mousedown", handlePossibleNavigation, true);
 
-loadSettings().then(() => {
-    if (redirectCurrentPage())
+loadSettings().then(async () => {
+    if (await redirectCurrentPage())
         return;
 
     observeLinks();
@@ -156,8 +163,8 @@ extensionApi.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local" || !Object.keys(changes).some((key) => key in DEFAULT_SETTINGS))
         return;
 
-    loadSettings().then(() => {
-        if (redirectCurrentPage())
+    loadSettings().then(async () => {
+        if (await redirectCurrentPage())
             return;
 
         rewriteAnchors();

@@ -120,6 +120,8 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				"Resources/region-failed.html",
+				"Resources/region-failed.js",
 				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
@@ -139,6 +141,8 @@
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				"Resources/region-failed.html",
+				"Resources/region-failed.js",
 				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
