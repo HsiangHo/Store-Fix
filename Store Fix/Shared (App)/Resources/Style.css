@@ -48,6 +48,10 @@ body.platform-ios .platform-mac {
     display: none;
 }
 
+body.platform-ios:not(.settings-supported) button.open-extension-settings {
+    display: none;
+}
+
 body:not(.state-on, .state-off) :is(.state-on, .state-off) {
     display: none;
 }

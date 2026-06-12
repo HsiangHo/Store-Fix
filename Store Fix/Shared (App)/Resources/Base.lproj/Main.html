@@ -18,11 +18,27 @@
             <p>Keep App Store links in your chosen region.</p>
         </header>
 
-        <section class="status-panel platform-ios">
+        <section class="status-panel platform-ios state-unknown">
             <div class="status-indicator neutral"></div>
             <div>
-                <h2>Enable in Settings</h2>
-                <p>You can turn on Store Fix's Safari extension in Settings.</p>
+                <h2>Enable Store Fix in Safari</h2>
+                <p>Open Settings > Apps > Safari > Extensions, then turn on Store Fix.</p>
+            </div>
+        </section>
+
+        <section class="status-panel platform-ios state-on">
+            <div class="status-indicator success"></div>
+            <div>
+                <h2>Safari extension is on</h2>
+                <p>Use Store Fix from Safari to choose your fixed region.</p>
+            </div>
+        </section>
+
+        <section class="status-panel platform-ios state-off">
+            <div class="status-indicator warning"></div>
+            <div>
+                <h2>Safari extension is off</h2>
+                <p>Turn on Store Fix in Safari extension settings to start fixing App Store links.</p>
             </div>
         </section>
 
@@ -50,10 +66,11 @@
             </div>
         </section>
 
+        <button class="platform-ios open-extension-settings">Open Safari Extension Settings</button>
         <button class="platform-mac open-preferences">Open Safari Extensions Preferences</button>
 
         <p class="footnote platform-mac">After enabling Store Fix, manage regions from the Safari toolbar popup.</p>
-        <p class="footnote platform-ios">After enabling Store Fix, manage regions from Safari.</p>
+        <p class="footnote platform-ios">After enabling Store Fix, manage regions from the Safari extensions menu.</p>
     </main>
 </body>
 </html>
