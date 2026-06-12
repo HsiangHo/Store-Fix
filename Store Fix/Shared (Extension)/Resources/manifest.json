@@ -16,6 +16,7 @@
 
     "background": {
         "scripts": [ "store-regions.js", "app-store-url.js", "background.js" ],
+        "persistent": false,
         "type": "module"
     },
 
