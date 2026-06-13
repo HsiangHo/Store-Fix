@@ -22,14 +22,6 @@
         "type": "module"
     },
 
-    "declarative_net_request": {
-        "rule_resources": [{
-            "id": "app_store_desktop_ua",
-            "enabled": false,
-            "path": "rules/app-store-desktop-ua.json"
-        }]
-    },
-
     "content_scripts": [{
         "js": [ "store-regions.js", "app-store-url.js", "content.js" ],
         "matches": [ "<all_urls>" ],
@@ -46,7 +38,7 @@
         }
     },
 
-    "permissions": [ "storage", "tabs", "webNavigation", "declarativeNetRequestWithHostAccess" ],
+    "permissions": [ "storage", "tabs", "webNavigation" ],
 
     "host_permissions": [ "*://apps.apple.com/*" ]
 }
