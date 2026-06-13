@@ -15,6 +15,7 @@
 
 body {
     width: 430px;
+    box-sizing: border-box;
     max-height: 560px;
     margin: 0;
     padding: 0;
@@ -22,6 +23,13 @@ body {
     background: var(--background);
     color: var(--text);
     font: 14px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+}
+
+/* iPad/macOS popovers need a fixed body width; only phone screens should shrink. */
+@media (hover: none) and (pointer: coarse) and (max-device-width: 480px) {
+    body {
+        width: min(430px, 100vw);
+    }
 }
 
 button,
@@ -40,7 +48,8 @@ button {
     max-height: 560px;
     box-sizing: border-box;
     padding: 12px;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .section {
