@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <title>Store Fix</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            font: -apple-system-body;
+        }
+
+        body {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        main {
+            max-width: 360px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        p {
+            color: CanvasText;
+            margin: 0 0 12px;
+        }
+
+        a {
+            color: LinkText;
+        }
+    </style>
+    <script src="app-store-url.js"></script>
+    <script defer src="force-open.js"></script>
+</head>
+<body>
+    <main>
+        <p>Opening App Store page in Chrome...</p>
+        <a id="fallback" href="https://apps.apple.com/" rel="noopener">Open manually</a>
+    </main>
+</body>
+</html>

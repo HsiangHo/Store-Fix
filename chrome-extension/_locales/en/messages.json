@@ -1,0 +1,142 @@
+{
+    "extension_name": {
+        "message": "Store Fix",
+        "description": "The display name for the extension."
+    },
+    "extension_description": {
+        "message": "Redirect App Store links to your selected storefront region.",
+        "description": "Description of what the extension does."
+    },
+    "fixedRegionLabel": {
+        "message": "Fix country or region"
+    },
+    "editRegion": {
+        "message": "Edit"
+    },
+    "doneEditing": {
+        "message": "Done"
+    },
+    "searchRegionPlaceholder": {
+        "message": "Search country, region, or code"
+    },
+    "regionFilterAria": {
+        "message": "Filter fixed region by location"
+    },
+    "fixedRegionGridAria": {
+        "message": "Fixed region"
+    },
+    "showAllRegions": {
+        "message": "Show all $COUNT$ regions",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "collapseRegions": {
+        "message": "Collapse regions"
+    },
+    "quickJumpTitle": {
+        "message": "Quick Jump"
+    },
+    "quickSettingsTitle": {
+        "message": "Jump settings"
+    },
+    "openCurrentTab": {
+        "message": "Open in current tab"
+    },
+    "openNewTab": {
+        "message": "Open in new tab"
+    },
+    "forceOpenModeLabel": {
+        "message": "Force App Store links to open in Chrome"
+    },
+    "forceOpenModeDescription": {
+        "message": "Keep apps.apple.com links in Chrome instead of handing them to App Store."
+    },
+    "forceOpenOff": {
+        "message": "Off"
+    },
+    "forceOpenNewWindow": {
+        "message": "Window"
+    },
+    "forceOpenNewTab": {
+        "message": "Tab"
+    },
+    "quickFilterAria": {
+        "message": "Filter quick jump regions by location"
+    },
+    "quickGridAria": {
+        "message": "Quick jump regions"
+    },
+    "noMatchingRegion": {
+        "message": "No matching regions"
+    },
+    "currentFixedRegionAria": {
+        "message": "Current fixed region: $REGION$",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "invalidRegionCode": {
+        "message": "Enter a two-letter region code, for example tw"
+    },
+    "notAppStoreAppLink": {
+        "message": "The current tab is not an App Store link"
+    },
+    "redirectFailedTitle": {
+        "message": "Cannot open $REGION$ App Store",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedDescription": {
+        "message": "Apple keeps redirecting this page back to $CURRENT_REGION$ based on your network location. To open $TARGET_REGION$, change your IP/VPN or choose another App Store region.",
+        "placeholders": {
+            "target_region": {
+                "content": "$1"
+            },
+            "current_region": {
+                "content": "$2"
+            }
+        }
+    },
+    "redirectFailedTargetUrl": {
+        "message": "Target URL: $URL$",
+        "placeholders": {
+            "url": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedContinueButton": {
+        "message": "Continue with $REGION$ region",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "regionFilterAll": {
+        "message": "All"
+    },
+    "regionFilterAsiaPacific": {
+        "message": "Asia Pacific"
+    },
+    "regionFilterUsaCanada": {
+        "message": "USA/Canada"
+    },
+    "regionFilterEurope": {
+        "message": "Europe"
+    },
+    "regionFilterLatinAmericaCaribbean": {
+        "message": "Latin America/Caribbean"
+    },
+    "regionFilterAfricaMiddleEastIndia": {
+        "message": "Africa/Middle East/India"
+    }
+}

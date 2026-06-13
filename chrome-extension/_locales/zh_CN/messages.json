@@ -1,0 +1,142 @@
+{
+    "extension_name": {
+        "message": "Store Fix",
+        "description": "扩展显示名称。"
+    },
+    "extension_description": {
+        "message": "将 App Store 链接重定向到你选择的商店区域。",
+        "description": "扩展功能说明。"
+    },
+    "fixedRegionLabel": {
+        "message": "固定国家或地区"
+    },
+    "editRegion": {
+        "message": "修改"
+    },
+    "doneEditing": {
+        "message": "完成"
+    },
+    "searchRegionPlaceholder": {
+        "message": "搜索国家、地区或代码"
+    },
+    "regionFilterAria": {
+        "message": "按位置筛选固定区域"
+    },
+    "fixedRegionGridAria": {
+        "message": "固定区域"
+    },
+    "showAllRegions": {
+        "message": "显示全部 $COUNT$ 个地区",
+        "placeholders": {
+            "count": {
+                "content": "$1"
+            }
+        }
+    },
+    "collapseRegions": {
+        "message": "收起地区"
+    },
+    "quickJumpTitle": {
+        "message": "快速跳转"
+    },
+    "quickSettingsTitle": {
+        "message": "跳转设置"
+    },
+    "openCurrentTab": {
+        "message": "当前标签页打开"
+    },
+    "openNewTab": {
+        "message": "新标签页打开"
+    },
+    "forceOpenModeLabel": {
+        "message": "强制在 Chrome 打开"
+    },
+    "forceOpenModeDescription": {
+        "message": "打开 apps.apple.com 链接时留在 Chrome 网页中，避免拉起 App Store。"
+    },
+    "forceOpenOff": {
+        "message": "关闭"
+    },
+    "forceOpenNewWindow": {
+        "message": "新窗口"
+    },
+    "forceOpenNewTab": {
+        "message": "新标签"
+    },
+    "quickFilterAria": {
+        "message": "按位置筛选快速跳转区域"
+    },
+    "quickGridAria": {
+        "message": "快速跳转区域"
+    },
+    "noMatchingRegion": {
+        "message": "没有匹配的区域"
+    },
+    "currentFixedRegionAria": {
+        "message": "当前固定区域：$REGION$",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "invalidRegionCode": {
+        "message": "请输入两位区域代码，例如 tw"
+    },
+    "notAppStoreAppLink": {
+        "message": "当前标签页不是 App Store 链接"
+    },
+    "redirectFailedTitle": {
+        "message": "无法打开 $REGION$ 区 App Store",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedDescription": {
+        "message": "Apple 一直根据你的网络位置把页面重定向回 $CURRENT_REGION$。如果要访问 $TARGET_REGION$ 区，请更换 IP/VPN，或者选择其他 App Store 区域。",
+        "placeholders": {
+            "target_region": {
+                "content": "$1"
+            },
+            "current_region": {
+                "content": "$2"
+            }
+        }
+    },
+    "redirectFailedTargetUrl": {
+        "message": "目标 URL：$URL$",
+        "placeholders": {
+            "url": {
+                "content": "$1"
+            }
+        }
+    },
+    "redirectFailedContinueButton": {
+        "message": "以 $REGION$ 区继续访问",
+        "placeholders": {
+            "region": {
+                "content": "$1"
+            }
+        }
+    },
+    "regionFilterAll": {
+        "message": "全部"
+    },
+    "regionFilterAsiaPacific": {
+        "message": "亚太"
+    },
+    "regionFilterUsaCanada": {
+        "message": "美国/加拿大"
+    },
+    "regionFilterEurope": {
+        "message": "欧洲"
+    },
+    "regionFilterLatinAmericaCaribbean": {
+        "message": "拉美/加勒比"
+    },
+    "regionFilterAfricaMiddleEastIndia": {
+        "message": "非洲/中东/印度"
+    }
+}
