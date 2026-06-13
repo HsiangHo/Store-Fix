@@ -2,12 +2,23 @@ const extensionApi = globalThis.browser ?? globalThis.chrome;
 const {
     DEFAULT_SETTINGS,
     getForcedAppStoreUrl,
+    isAppStoreDeepLinkUrl,
     normalizeSettings,
     rewriteAppStoreUrl,
     shouldBypassAutoRedirect
 } = globalThis.StoreFixUrl;
 
 let currentSettings = DEFAULT_SETTINGS;
+let canForceOpenAppStoreInSafari = !isIOSPlatform();
+
+function isIOSPlatform() {
+    return /\b(iPhone|iPad|iPod)\b/.test(navigator.userAgent)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function canUseForceOpenMode() {
+    return currentSettings.forceOpenMode !== "off" && canForceOpenAppStoreInSafari;
+}
 
 function rewriteHref(rawUrl) {
     if (!currentSettings.enabled)
@@ -20,7 +31,10 @@ function rewriteHref(rawUrl) {
 }
 
 function getForcedHref(rawUrl) {
-    if (!currentSettings.enabled || currentSettings.forceOpenMode === "off")
+    if (!currentSettings.enabled || !canUseForceOpenMode())
+        return null;
+
+    if (isAppStoreDeepLinkUrl(rawUrl, document.baseURI))
         return null;
 
     return getForcedAppStoreUrl(rawUrl, currentSettings, document.baseURI);
@@ -70,7 +84,7 @@ function getEventAnchor(event) {
 }
 
 function shouldForceOpen(event) {
-    return currentSettings.forceOpenMode !== "off" && (event.type === "click" || event.type === "auxclick");
+    return canUseForceOpenMode() && (event.type === "click" || event.type === "auxclick");
 }
 
 function openForcedAppStoreLink(url) {
@@ -113,6 +127,18 @@ function handlePossibleNavigation(event) {
 async function loadSettings() {
     const storedSettings = await extensionApi.storage.local.get(DEFAULT_SETTINGS);
     currentSettings = normalizeSettings(storedSettings);
+
+    try {
+        const capabilities = await extensionApi.runtime.sendMessage({
+            type: "store-fix-get-capabilities"
+        });
+
+        if (typeof capabilities?.canForceOpenAppStoreInSafari === "boolean")
+            canForceOpenAppStoreInSafari = capabilities.canForceOpenAppStoreInSafari;
+    } catch (error) {
+        canForceOpenAppStoreInSafari = !isIOSPlatform();
+        console.warn("Store Fix could not load extension capabilities:", error);
+    }
 }
 
 function observeLinks() {

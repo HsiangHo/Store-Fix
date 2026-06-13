@@ -122,6 +122,7 @@
 				Resources/popup.js,
 				"Resources/region-failed.html",
 				"Resources/region-failed.js",
+				Resources/rules,
 				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
@@ -143,6 +144,7 @@
 				Resources/popup.js,
 				"Resources/region-failed.html",
 				"Resources/region-failed.js",
+				Resources/rules,
 				"Resources/store-regions.js",
 				SafariWebExtensionHandler.swift,
 			);
@@ -169,6 +171,7 @@
 			explicitFolders = (
 				Resources/_locales,
 				Resources/images,
+				Resources/rules,
 			);
 			path = "Shared (Extension)";
 			sourceTree = "<group>";

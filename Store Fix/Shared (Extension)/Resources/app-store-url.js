@@ -16,6 +16,12 @@
     const PRESET_REGIONS = Object.freeze(globalThis.StoreFixRegions?.REGION_CODES ?? ["cn", "hk", "jp", "us", "ca"]);
     const REGION_PATTERN = /^[a-z]{2}$/;
     const APP_STORE_HOST = "apps.apple.com";
+    const APP_STORE_WEB_PROTOCOLS = new Set(["http:", "https:"]);
+    const APP_STORE_DEEP_LINK_PROTOCOLS = new Set(["itms-apps:", "itms-appss:"]);
+    const APP_STORE_PROTOCOLS = new Set([
+        ...APP_STORE_WEB_PROTOCOLS,
+        ...APP_STORE_DEEP_LINK_PROTOCOLS
+    ]);
     const FORCE_OPEN_MODES = new Set(["off", "new-window", "new-tab"]);
 
     function sanitizeRegion(value) {
@@ -96,16 +102,28 @@
         if (url.hostname.toLowerCase() !== APP_STORE_HOST)
             return null;
 
-        if (url.protocol !== "https:" && url.protocol !== "http:")
+        if (!APP_STORE_PROTOCOLS.has(url.protocol))
             return null;
 
-        url.protocol = "https:";
         return url;
     }
 
     function normalizeAppStorePageUrl(rawUrl, baseUrl) {
         const url = parseAppStoreUrl(rawUrl, baseUrl);
-        return url?.toString() ?? null;
+
+        if (!url)
+            return null;
+
+        if (APP_STORE_DEEP_LINK_PROTOCOLS.has(url.protocol))
+            return `https://${url.host}${url.pathname}${url.search}${url.hash}`;
+
+        url.protocol = "https:";
+        return url.toString();
+    }
+
+    function isAppStoreDeepLinkUrl(rawUrl, baseUrl) {
+        const url = parseAppStoreUrl(rawUrl, baseUrl);
+        return Boolean(url && APP_STORE_DEEP_LINK_PROTOCOLS.has(url.protocol));
     }
 
     function rewriteAppStoreUrl(rawUrl, settings = DEFAULT_SETTINGS, baseUrl) {
@@ -118,6 +136,9 @@
 
         if (!targetRegion)
             return null;
+
+        if (url.protocol === "http:")
+            url.protocol = "https:";
 
         url.pathname = `/${getRegionalPathSegments(url.pathname, targetRegion).join("/")}`;
 
@@ -166,6 +187,7 @@
         PRESET_REGIONS,
         getForcedAppStoreUrl,
         getTargetRegion,
+        isAppStoreDeepLinkUrl,
         normalizeAppStorePageUrl,
         normalizeSettings,
         rewriteAppStoreUrl,

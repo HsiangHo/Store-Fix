@@ -3,6 +3,7 @@ const {
     DEFAULT_SETTINGS,
     getForcedAppStoreUrl,
     getTargetRegion,
+    isAppStoreDeepLinkUrl,
     normalizeSettings,
     rewriteAppStoreUrl,
     sanitizeRegion,
@@ -11,6 +12,11 @@ const {
 
 let currentSettings = DEFAULT_SETTINGS;
 let settingsReady = refreshSettings();
+let currentPlatformOS = "";
+let platformReady = refreshPlatform();
+let canModifyAppStoreRequestHeaders = false;
+let requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
+const APP_STORE_DESKTOP_UA_RULESET_ID = "app_store_desktop_ua";
 const REDIRECT_LOOP_LIMIT = 3;
 const REDIRECT_LOOP_WINDOW_MS = 20000;
 const REDIRECT_LOOP_STORAGE_KEY = "redirectLoopAttempts";
@@ -22,6 +28,77 @@ async function refreshSettings() {
     const storedSettings = await extensionApi.storage.local.get(DEFAULT_SETTINGS);
     currentSettings = normalizeSettings(storedSettings);
     return currentSettings;
+}
+
+async function refreshPlatform() {
+    try {
+        const platformInfo = await extensionApi.runtime.getPlatformInfo?.();
+        currentPlatformOS = platformInfo?.os ?? "";
+    } catch {
+        currentPlatformOS = "";
+    }
+
+    return currentPlatformOS;
+}
+
+function shouldEnableAppStoreDesktopUARuleset() {
+    return currentSettings.enabled && currentSettings.forceOpenMode !== "off" && isIOSPlatform();
+}
+
+async function syncAppStoreDesktopUARuleset() {
+    await settingsReady;
+    await platformReady;
+
+    const dnr = extensionApi.declarativeNetRequest;
+
+    if (!dnr) {
+        canModifyAppStoreRequestHeaders = false;
+        return canModifyAppStoreRequestHeaders;
+    }
+
+    const shouldEnableRuleset = shouldEnableAppStoreDesktopUARuleset();
+
+    if (typeof dnr.updateEnabledRulesets === "function") {
+        try {
+            await dnr.updateEnabledRulesets({
+                disableRulesetIds: shouldEnableRuleset ? [] : [APP_STORE_DESKTOP_UA_RULESET_ID],
+                enableRulesetIds: shouldEnableRuleset ? [APP_STORE_DESKTOP_UA_RULESET_ID] : []
+            });
+        } catch (error) {
+            console.warn("Store Fix could not update declarative net request rulesets:", error);
+        }
+    }
+
+    if (typeof dnr.getEnabledRulesets === "function") {
+        try {
+            const enabledRulesets = await dnr.getEnabledRulesets();
+            canModifyAppStoreRequestHeaders = enabledRulesets.includes(APP_STORE_DESKTOP_UA_RULESET_ID);
+            return canModifyAppStoreRequestHeaders;
+        } catch (error) {
+            console.warn("Store Fix could not inspect declarative net request rulesets:", error);
+        }
+    }
+
+    canModifyAppStoreRequestHeaders = shouldEnableRuleset && typeof dnr.updateEnabledRulesets === "function";
+    return canModifyAppStoreRequestHeaders;
+}
+
+function isIOSPlatform() {
+    if (currentPlatformOS === "ios")
+        return true;
+
+    const navigator = globalThis.navigator;
+    const userAgent = navigator?.userAgent ?? "";
+    return /\b(iPhone|iPad|iPod)\b/.test(userAgent)
+        || (navigator?.platform === "MacIntel" && navigator?.maxTouchPoints > 1);
+}
+
+function canPreventMobileAppStoreDeepLinks() {
+    return !isIOSPlatform() || canModifyAppStoreRequestHeaders;
+}
+
+function canUseForceOpenMode() {
+    return currentSettings.forceOpenMode !== "off" && canPreventMobileAppStoreDeepLinks();
 }
 
 async function getRedirectUrl(url) {
@@ -57,7 +134,7 @@ function parseAppStoreNavigationUrl(rawUrl) {
     if (url.hostname.toLowerCase() !== "apps.apple.com")
         return null;
 
-    if (url.protocol !== "https:" && url.protocol !== "http:")
+    if (!["http:", "https:", "itms-apps:", "itms-appss:"].includes(url.protocol))
         return null;
 
     return url;
@@ -350,6 +427,8 @@ async function getLoopFailureUrl(tabId, sourceUrl, targetUrl) {
 
 async function getNavigationRedirect(tabId, url) {
     await settingsReady;
+    await platformReady;
+    await requestHeaderRewriteReady;
 
     if (!currentSettings.enabled)
         return null;
@@ -359,7 +438,7 @@ async function getNavigationRedirect(tabId, url) {
 
     const navigationSettings = getNavigationSettings(url);
 
-    if (currentSettings.forceOpenMode !== "off") {
+    if (canUseForceOpenMode() && !isAppStoreDeepLinkUrl(url)) {
         const candidateTargetUrl = getForcedAppStoreUrl(url, navigationSettings);
 
         if (!candidateTargetUrl)
@@ -461,9 +540,12 @@ async function openQuickJump(region, openMode) {
     await rememberRedirectIntent(activeTab.id, targetUrl);
     await setManualJumpBypass(targetUrl, targetRegion);
 
-    const openUrl = currentSettings.forceOpenMode === "off"
-        ? targetUrl
-        : getForceOpenUrl(targetUrl);
+    await platformReady;
+    await requestHeaderRewriteReady;
+
+    const openUrl = canUseForceOpenMode()
+        ? getForceOpenUrl(targetUrl)
+        : targetUrl;
 
     if (openMode === "new-tab") {
         const newTab = await extensionApi.tabs.create({
@@ -494,10 +576,21 @@ async function getQuickJumpContext() {
     };
 }
 
+async function getCapabilities() {
+    await platformReady;
+    await requestHeaderRewriteReady;
+
+    return {
+        canForceOpenAppStoreInSafari: canPreventMobileAppStoreDeepLinks()
+    };
+}
+
 async function openForcedAppStoreLink(url) {
     await settingsReady;
+    await platformReady;
+    await requestHeaderRewriteReady;
 
-    if (!currentSettings.enabled || currentSettings.forceOpenMode === "off")
+    if (!currentSettings.enabled || !canUseForceOpenMode())
         return { changed: false };
 
     const targetUrl = getForcedAppStoreUrl(url, currentSettings);
@@ -578,9 +671,12 @@ async function continueWithSourceRegion(sender, targetUrl, sourceRegion) {
 
     await setManualJumpBypass(continueUrl, region);
 
-    const openUrl = currentSettings.forceOpenMode === "off"
-        ? continueUrl
-        : getForceOpenUrl(continueUrl, false);
+    await platformReady;
+    await requestHeaderRewriteReady;
+
+    const openUrl = canUseForceOpenMode()
+        ? getForceOpenUrl(continueUrl, false)
+        : continueUrl;
 
     if (typeof tabId === "number" && tabId >= 0) {
         await extensionApi.tabs.update(tabId, { url: openUrl });
@@ -592,11 +688,14 @@ async function continueWithSourceRegion(sender, targetUrl, sourceRegion) {
 
 extensionApi.runtime.onInstalled.addListener(() => {
     settingsReady = refreshSettings();
+    requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
 });
 
 extensionApi.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && Object.keys(changes).some((key) => key in DEFAULT_SETTINGS))
+    if (areaName === "local" && Object.keys(changes).some((key) => key in DEFAULT_SETTINGS)) {
         settingsReady = refreshSettings();
+        requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
+    }
 });
 
 extensionApi.tabs?.onRemoved?.addListener((tabId) => {
@@ -636,6 +735,9 @@ extensionApi.runtime.onMessage.addListener((request, sender) => {
 
     if (request?.type === "store-fix-get-quick-jump-context")
         return getQuickJumpContext();
+
+    if (request?.type === "store-fix-get-capabilities")
+        return getCapabilities();
 
     if (request?.type === "store-fix-fix-current-tab")
         return fixCurrentTab();
