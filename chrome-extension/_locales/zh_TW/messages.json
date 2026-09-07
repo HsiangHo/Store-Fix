@@ -121,6 +121,18 @@
             }
         }
     },
+    "redirectFailedOpenAppStoreButton": {
+        "message": "在 App Store 中開啟"
+    },
+    "redirectFailedCopyButton": {
+        "message": "複製連結"
+    },
+    "redirectFailedCopied": {
+        "message": "已複製"
+    },
+    "redirectFailedCopyError": {
+        "message": "複製失敗，請重試"
+    },
     "regionFilterAll": {
         "message": "全部"
     },

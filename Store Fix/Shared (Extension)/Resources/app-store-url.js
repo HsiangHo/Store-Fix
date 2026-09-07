@@ -126,6 +126,17 @@
         return Boolean(url && APP_STORE_DEEP_LINK_PROTOCOLS.has(url.protocol));
     }
 
+    function getNativeAppStoreUrl(rawUrl, platform) {
+        const url = parseAppStoreUrl(rawUrl);
+        const protocol = platform === "mac" ? "macappstore:" : platform === "ios" ? "itms-apps:" : null;
+
+        if (!url || !protocol || url.username || url.password || url.port)
+            return null;
+
+        // URL.protocol cannot switch between web and custom schemes.
+        return `${protocol}//${APP_STORE_HOST}${url.pathname}${url.search}${url.hash}`;
+    }
+
     function rewriteAppStoreUrl(rawUrl, settings = DEFAULT_SETTINGS, baseUrl) {
         const url = parseAppStoreUrl(rawUrl, baseUrl);
 
@@ -186,6 +197,7 @@
         DEFAULT_SETTINGS,
         PRESET_REGIONS,
         getForcedAppStoreUrl,
+        getNativeAppStoreUrl,
         getTargetRegion,
         isAppStoreDeepLinkUrl,
         normalizeAppStorePageUrl,

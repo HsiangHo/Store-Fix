@@ -121,6 +121,18 @@
             }
         }
     },
+    "redirectFailedOpenAppStoreButton": {
+        "message": "Open in App Store"
+    },
+    "redirectFailedCopyButton": {
+        "message": "Copy URL"
+    },
+    "redirectFailedCopied": {
+        "message": "Copied"
+    },
+    "redirectFailedCopyError": {
+        "message": "Copy failed. Try again."
+    },
     "regionFilterAll": {
         "message": "All"
     },

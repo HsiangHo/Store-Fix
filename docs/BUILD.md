@@ -24,6 +24,7 @@ It also handles direct address bar navigation, so typing or pasting an App Store
 - Quick Jump can open the selected region in the current tab or a new tab.
 - Frequently used regions are promoted to the front of both the fixed-region selector and Quick Jump list.
 - The popup closes automatically after a successful Quick Jump.
+- If Apple repeatedly redirects away from the selected region, the failure page offers **Open in App Store** on macOS and iOS/iPadOS, preserving the target link's region and app details.
 
 ## Localization
 
@@ -89,3 +90,11 @@ xcodebuild -project "Store Fix/Store Fix.xcodeproj" \
 ```
 
 After building, enable the extension in Safari settings.
+
+## Tests
+
+Run the native App Store link and failure-page regression tests for both extensions:
+
+```sh
+node --test tests/region-failed.test.cjs
+```

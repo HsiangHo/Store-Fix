@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <title>Store Fix</title>
     <style>
@@ -39,25 +40,34 @@
             margin: 0 0 16px;
         }
 
-        code {
+        .target-url-row {
+            align-items: center;
             background: color-mix(in srgb, CanvasText 8%, transparent);
             border-radius: 6px;
+            display: grid;
+            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 6px 6px 6px 12px;
+        }
+
+        code {
             display: block;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-size: 12px;
             line-height: 1.5;
             overflow-wrap: anywhere;
-            padding: 12px;
+            padding: 6px 0;
         }
 
         .actions {
+            align-items: flex-start;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
             margin-top: 18px;
         }
 
-        button {
+        button, .button {
             appearance: none;
             background: LinkText;
             border: 0;
@@ -70,9 +80,19 @@
             line-height: 1.2;
             min-height: 38px;
             padding: 9px 14px;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            text-align: center;
+            text-decoration: none;
         }
 
-        button:hover {
+        .button {
+            background: color-mix(in srgb, CanvasText 8%, transparent);
+            color: CanvasText;
+        }
+
+        button:hover, .button:hover {
             filter: brightness(1.08);
         }
 
@@ -81,16 +101,148 @@
             filter: grayscale(0.4);
             opacity: 0.65;
         }
+
+        .copy-button {
+            align-items: center;
+            background: transparent;
+            border-radius: 6px;
+            color: color-mix(in srgb, CanvasText 65%, transparent);
+            display: grid;
+            flex-shrink: 0;
+            height: 36px;
+            justify-items: center;
+            min-height: 36px;
+            padding: 0;
+            position: relative;
+            transition: background-color 140ms, color 140ms, transform 100ms;
+            width: 36px;
+        }
+
+        .copy-button:hover:not(:disabled) {
+            background: color-mix(in srgb, CanvasText 8%, transparent);
+            filter: none;
+        }
+
+        .copy-button:active:not(:disabled) {
+            transform: scale(0.92);
+        }
+
+        .copy-button:focus-visible {
+            outline: 2px solid LinkText;
+            outline-offset: 2px;
+        }
+
+        .copy-button svg {
+            grid-area: 1 / 1;
+            height: 18px;
+            pointer-events: none;
+            transition: opacity 140ms, transform 140ms;
+            width: 18px;
+        }
+
+        .copy-button .check-icon,
+        .copy-button[data-state="copied"] .copy-icon {
+            opacity: 0;
+            transform: scale(0.7);
+        }
+
+        .copy-button[data-state="copied"] .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .copy-button[data-state="copied"] {
+            color: #187a43;
+        }
+
+        .copy-button[data-state="error"] {
+            color: #b42318;
+        }
+
+        .copy-tooltip {
+            background: CanvasText;
+            border-radius: 4px;
+            bottom: calc(100% + 6px);
+            color: Canvas;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+            max-width: 200px;
+            opacity: 0;
+            padding: 6px 8px;
+            pointer-events: none;
+            position: absolute;
+            right: 0;
+            transform: translateY(2px);
+            transition: opacity 140ms, transform 140ms;
+            width: max-content;
+            z-index: 1;
+        }
+
+        .copy-button:hover:not(:disabled) .copy-tooltip,
+        .copy-button:focus-visible .copy-tooltip,
+        .copy-button[data-state="copied"] .copy-tooltip,
+        .copy-button[data-state="error"] .copy-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .visually-hidden {
+            clip-path: inset(50%);
+            height: 1px;
+            overflow: hidden;
+            position: absolute;
+            white-space: nowrap;
+            width: 1px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .copy-button[data-state="copied"] { color: #77da9a; }
+            .copy-button[data-state="error"] { color: #ff8b82; }
+        }
+
+        @media (pointer: coarse) {
+            .copy-button {
+                height: 44px;
+                width: 44px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .copy-button, .copy-button svg, .copy-tooltip {
+                transition: none;
+            }
+
+            .copy-button:active:not(:disabled) {
+                transform: none;
+            }
+        }
     </style>
+    <script defer src="app-store-url.js"></script>
     <script defer src="region-failed.js"></script>
 </head>
 <body>
     <main>
         <h1 id="heading">Cannot switch App Store region</h1>
         <p id="description">Apple redirected this page back to your current region. Change your IP or choose another region.</p>
-        <code id="target-url"></code>
+        <div class="target-url-row">
+            <code id="target-url"></code>
+            <button id="copy-url-button" class="copy-button" type="button" aria-label="Copy URL" disabled>
+                <!-- Lucide Copy and Check icons. License: images/lucide-LICENSE.txt -->
+                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                </svg>
+                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5"/>
+                </svg>
+                <span id="copy-tooltip" class="copy-tooltip" aria-hidden="true"></span>
+            </button>
+        </div>
+        <span id="copy-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
         <div class="actions">
             <button id="continue-button" type="button" hidden>Continue</button>
+            <a id="open-app-store-button" class="button" hidden>Open in App Store</a>
         </div>
     </main>
 </body>
