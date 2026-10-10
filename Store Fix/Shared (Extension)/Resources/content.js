@@ -171,9 +171,9 @@ function observeLinks() {
     });
 }
 
-document.addEventListener("click", handlePossibleNavigation, true);
-document.addEventListener("auxclick", handlePossibleNavigation, true);
-document.addEventListener("mousedown", handlePossibleNavigation, true);
+window.addEventListener("click", handlePossibleNavigation, true);
+window.addEventListener("auxclick", handlePossibleNavigation, true);
+window.addEventListener("mousedown", handlePossibleNavigation, true);
 
 extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request?.type !== "store-fix-get-page-languages")

@@ -39,6 +39,11 @@
         "default_icon": "images/toolbar-icon.svg"
     },
 
+    "web_accessible_resources": [{
+        "resources": [ "force-open.html" ],
+        "matches": [ "<all_urls>" ]
+    }],
+
     "permissions": [ "storage", "tabs", "webNavigation", "declarativeNetRequestWithHostAccess" ],
 
     "host_permissions": [ "*://apps.apple.com/*" ]

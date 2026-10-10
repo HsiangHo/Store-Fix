@@ -15,8 +15,9 @@ let settingsReady = refreshSettings();
 let currentPlatformOS = "";
 let platformReady = refreshPlatform();
 let canModifyAppStoreRequestHeaders = false;
-let requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
+let requestHeaderRewriteReady = syncDeclarativeNetRequestRules();
 const APP_STORE_DESKTOP_UA_RULESET_ID = "app_store_desktop_ua";
+const FORCE_OPEN_REDIRECT_RULE_ID = 1;
 const REDIRECT_LOOP_LIMIT = 3;
 const REDIRECT_LOOP_WINDOW_MS = 20000;
 const REDIRECT_LOOP_STORAGE_KEY = "redirectLoopAttempts";
@@ -81,6 +82,52 @@ async function syncAppStoreDesktopUARuleset() {
 
     canModifyAppStoreRequestHeaders = shouldEnableRuleset && typeof dnr.updateEnabledRulesets === "function";
     return canModifyAppStoreRequestHeaders;
+}
+
+// Safari treats App Store URLs as universal links, so a user-initiated navigation
+// that reaches apps.apple.com (including through a redirect such as Google's
+// /goto) launches App Store. Route those navigations through force-open.html,
+// which reloads the page without a user gesture so Safari keeps it in the tab.
+function getForceOpenRedirectRule() {
+    const extensionHost = new URL(extensionApi.runtime.getURL("")).hostname.toLowerCase();
+
+    return {
+        id: FORCE_OPEN_REDIRECT_RULE_ID,
+        priority: 1,
+        action: {
+            type: "redirect",
+            redirect: {
+                regexSubstitution: `${extensionApi.runtime.getURL("force-open.html")}?source=redirect#\\1`
+            }
+        },
+        condition: {
+            regexFilter: "^(https?://apps\\.apple\\.com/.*)$",
+            resourceTypes: [ "main_frame" ],
+            excludedInitiatorDomains: [ "apps.apple.com", extensionHost ]
+        }
+    };
+}
+
+async function syncForceOpenRedirectRule() {
+    const dnr = extensionApi.declarativeNetRequest;
+
+    if (typeof dnr?.updateDynamicRules !== "function")
+        return;
+
+    try {
+        await dnr.updateDynamicRules({
+            removeRuleIds: [FORCE_OPEN_REDIRECT_RULE_ID],
+            addRules: currentSettings.enabled && canUseForceOpenMode() ? [getForceOpenRedirectRule()] : []
+        });
+    } catch (error) {
+        console.warn("Store Fix could not update the force-open redirect rule:", error);
+    }
+}
+
+async function syncDeclarativeNetRequestRules() {
+    const canModifyHeaders = await syncAppStoreDesktopUARuleset();
+    await syncForceOpenRedirectRule();
+    return canModifyHeaders;
 }
 
 function isIOSPlatform() {
@@ -668,6 +715,11 @@ async function registerSenderIntent(sender, url) {
     return { changed: true, url: targetUrl };
 }
 
+async function prepareRedirectedNavigation(sender, url) {
+    const redirect = await getNavigationRedirect(sender?.tab?.id, url);
+    return { url: redirect?.targetUrl ?? url };
+}
+
 async function continueWithSourceRegion(sender, targetUrl, sourceRegion) {
     await settingsReady;
 
@@ -711,13 +763,13 @@ async function continueWithSourceRegion(sender, targetUrl, sourceRegion) {
 
 extensionApi.runtime.onInstalled.addListener(() => {
     settingsReady = refreshSettings();
-    requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
+    requestHeaderRewriteReady = syncDeclarativeNetRequestRules();
 });
 
 extensionApi.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === "local" && Object.keys(changes).some((key) => key in DEFAULT_SETTINGS)) {
         settingsReady = refreshSettings();
-        requestHeaderRewriteReady = syncAppStoreDesktopUARuleset();
+        requestHeaderRewriteReady = syncDeclarativeNetRequestRules();
     }
 });
 
@@ -752,6 +804,9 @@ extensionApi.runtime.onMessage.addListener((request, sender) => {
 
     if (request?.type === "store-fix-register-intended-url")
         return registerSenderIntent(sender, request.url);
+
+    if (request?.type === "store-fix-prepare-redirected-navigation")
+        return prepareRedirectedNavigation(sender, request.url);
 
     if (request?.type === "store-fix-continue-source-region")
         return continueWithSourceRegion(sender, request.targetUrl, request.sourceRegion);
