@@ -110,6 +110,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/_locales,
+				"Resources/app-store-languages.js",
 				"Resources/app-store-url.js",
 				Resources/background.js,
 				Resources/content.js,
@@ -132,6 +133,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/_locales,
+				"Resources/app-store-languages.js",
 				"Resources/app-store-url.js",
 				Resources/background.js,
 				Resources/content.js,
