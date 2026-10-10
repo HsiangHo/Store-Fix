@@ -27,17 +27,28 @@ function isRedirectLoop(url) {
     }
 }
 
-async function getRedirectedNavigationUrl() {
+// History means the redirect replaced a page the user was on, rather than a
+// link that already opened in a fresh tab. document.referrer is not reliable
+// after Safari redirects to an extension page, so it is not used here.
+function canReturnToSourcePage() {
+    return window.history.length > 1;
+}
+
+async function prepareRedirectedNavigation() {
     try {
         const response = await extensionApi.runtime.sendMessage({
             type: "store-fix-prepare-redirected-navigation",
-            url: targetUrl
+            url: targetUrl,
+            openSeparately: canReturnToSourcePage()
         });
 
-        return normalizeAppStorePageUrl(response?.url ?? "") ?? targetUrl;
+        return {
+            openedSeparately: response?.openedSeparately === true,
+            url: normalizeAppStorePageUrl(response?.url ?? "") ?? targetUrl
+        };
     } catch (error) {
         console.error("Store Fix could not prepare the redirected App Store URL:", error);
-        return targetUrl;
+        return { openedSeparately: false, url: targetUrl };
     }
 }
 
@@ -58,9 +69,14 @@ if (targetUrl) {
     if (!isRedirectedNavigation || !isRedirectLoop(targetUrl)) {
         window.setTimeout(async () => {
             if (isRedirectedNavigation) {
-                const nextUrl = await getRedirectedNavigationUrl();
-                fallbackLink.href = nextUrl;
-                window.location.replace(nextUrl);
+                const { openedSeparately, url } = await prepareRedirectedNavigation();
+                fallbackLink.href = url;
+
+                if (openedSeparately)
+                    window.history.back();
+                else
+                    window.location.replace(url);
+
                 return;
             }
 

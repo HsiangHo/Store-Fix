@@ -12,6 +12,7 @@ function loadBackground(settings = {}) {
     const addListener = () => {};
     const storage = { enabled: true, mode: "preset", region: "cn", forceOpenMode: "new-tab", ...settings };
     const dynamicRuleUpdates = [];
+    const created = [];
     const context = vm.createContext({
         URL,
         URLSearchParams,
@@ -42,14 +43,21 @@ function loadBackground(settings = {}) {
                 async getEnabledRulesets() { return []; },
                 async updateDynamicRules(update) { dynamicRuleUpdates.push(update); }
             },
-            tabs: { query: async () => [], onRemoved: { addListener } }
+            tabs: {
+                query: async () => [],
+                onRemoved: { addListener },
+                async create(options) { created.push({ kind: "tab", ...options }); return { id: 99 }; }
+            },
+            windows: {
+                async create(options) { created.push({ kind: "window", ...options }); return { id: 42 }; }
+            }
         }
     });
 
     for (const file of ["store-regions.js", "app-store-url.js", "background.js"])
         vm.runInContext(readResource(file), context, { filename: file });
 
-    return { context, dynamicRuleUpdates, storage };
+    return { context, created, dynamicRuleUpdates, storage };
 }
 
 test("force-open mode installs a redirect rule that excludes extension and App Store initiators", async () => {
@@ -88,8 +96,37 @@ test("redirected navigations resolve to the fixed region and bypass the next aut
     assert.equal(context.StoreFixUrl.shouldBypassAutoRedirect(result.url, storage), true);
 });
 
-function runForceOpen(href, { response, session = {} } = {}) {
+test("redirects that replaced a page open in a new tab or window per the force-open mode", async () => {
+    const sourceUrl = "https://apps.apple.com/us/app/x/id333903271";
+    const targetUrl = "https://apps.apple.com/cn/app/x/id333903271";
+    const forceOpenUrl = `${extensionBase}force-open.html?${new URLSearchParams({ url: targetUrl, registerIntent: "0" })}`;
+
+    for (const [forceOpenMode, expected] of [
+        ["new-tab", { kind: "tab", active: true, url: forceOpenUrl, index: 4 }],
+        ["new-window", { kind: "window", focused: true, type: "normal", url: forceOpenUrl }]
+    ]) {
+        const { context, created } = loadBackground({ forceOpenMode });
+        await vm.runInContext("requestHeaderRewriteReady", context);
+        const result = await context.prepareRedirectedNavigation({ tab: { id: 7, index: 3 } }, sourceUrl, true);
+
+        assert.equal(result.openedSeparately, true);
+        assert.equal(result.url, targetUrl);
+        assert.deepEqual(created.map((entry) => ({ ...entry })), [expected]);
+    }
+});
+
+test("redirects without a page to return to stay in the current tab", async () => {
+    const { context, created } = loadBackground();
+    await vm.runInContext("requestHeaderRewriteReady", context);
+    const result = await context.prepareRedirectedNavigation({ tab: { id: 7 } }, "https://apps.apple.com/us/app/x/id333903271", false);
+
+    assert.equal(result.openedSeparately, undefined);
+    assert.equal(created.length, 0);
+});
+
+function runForceOpen(href, { response, session = {}, historyLength = 1 } = {}) {
     const replaced = [];
+    const history = { length: historyLength, backCount: 0, back() { this.backCount += 1; } };
     const sent = [];
     const fallbackLink = { href: "" };
     const url = new URL(href);
@@ -114,13 +151,14 @@ function runForceOpen(href, { response, session = {} } = {}) {
         },
         window: {
             location: { search: url.search, hash: url.hash, replace: (next) => replaced.push(next) },
+            history,
             setTimeout: (callback) => { context.pending = callback(); }
         }
     });
 
     vm.runInContext(readResource("app-store-url.js"), context);
     vm.runInContext(readResource("force-open.js"), context);
-    return { context, fallbackLink, replaced, sent, session };
+    return { context, fallbackLink, history, replaced, sent, session };
 }
 
 test("force-open page follows the background target for redirected navigations", async () => {
@@ -133,7 +171,21 @@ test("force-open page follows the background target for redirected navigations",
 
     assert.equal(sent[0].type, "store-fix-prepare-redirected-navigation");
     assert.equal(sent[0].url, sourceUrl);
+    assert.equal(sent[0].openSeparately, false);
     assert.deepEqual(replaced, [targetUrl]);
+});
+
+test("force-open page returns to the source page after the target opens separately", async () => {
+    const sourceUrl = "https://apps.apple.com/us/app/x/id333903271";
+    const { context, history, replaced, sent } = runForceOpen(`${extensionBase}force-open.html?source=redirect#${sourceUrl}`, {
+        response: { url: "https://apps.apple.com/cn/app/x/id333903271", openedSeparately: true },
+        historyLength: 2
+    });
+    await context.pending;
+
+    assert.equal(sent[0].openSeparately, true);
+    assert.equal(history.backCount, 1);
+    assert.deepEqual(replaced, []);
 });
 
 test("force-open page stops when the redirect rule keeps bouncing the same URL", async () => {

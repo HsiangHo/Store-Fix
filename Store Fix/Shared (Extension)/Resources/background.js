@@ -671,8 +671,10 @@ async function openForcedAppStoreLink(url) {
     await rememberRedirectIntent(null, targetUrl);
     await setManualJumpBypass(targetUrl, getTargetRegion(currentSettings));
 
-    const forceOpenUrl = getForceOpenUrl(targetUrl);
+    return openForceOpenPage(targetUrl, getForceOpenUrl(targetUrl));
+}
 
+async function openForceOpenPage(targetUrl, forceOpenUrl, sourceTab) {
     if (currentSettings.forceOpenMode === "new-window" && extensionApi.windows?.create) {
         try {
             const createdWindow = await extensionApi.windows.create({
@@ -689,7 +691,8 @@ async function openForcedAppStoreLink(url) {
 
     const createdTab = await extensionApi.tabs.create({
         active: true,
-        url: forceOpenUrl
+        url: forceOpenUrl,
+        ...(Number.isInteger(sourceTab?.index) ? { index: sourceTab.index + 1 } : {})
     });
 
     await rememberRedirectIntent(createdTab.id, targetUrl);
@@ -715,9 +718,18 @@ async function registerSenderIntent(sender, url) {
     return { changed: true, url: targetUrl };
 }
 
-async function prepareRedirectedNavigation(sender, url) {
+// openSeparately is set when the redirect replaced a page the user was on (for
+// example a Google result), so the target honors the Tab/Window setting and
+// the source tab can go back instead of being taken over.
+async function prepareRedirectedNavigation(sender, url, openSeparately) {
     const redirect = await getNavigationRedirect(sender?.tab?.id, url);
-    return { url: redirect?.targetUrl ?? url };
+    const targetUrl = redirect?.targetUrl ?? url;
+
+    if (!openSeparately || !canUseForceOpenMode())
+        return { url: targetUrl };
+
+    const opened = await openForceOpenPage(targetUrl, getForceOpenUrl(targetUrl, false), sender?.tab);
+    return { ...opened, url: targetUrl, openedSeparately: true };
 }
 
 async function continueWithSourceRegion(sender, targetUrl, sourceRegion) {
@@ -806,7 +818,7 @@ extensionApi.runtime.onMessage.addListener((request, sender) => {
         return registerSenderIntent(sender, request.url);
 
     if (request?.type === "store-fix-prepare-redirected-navigation")
-        return prepareRedirectedNavigation(sender, request.url);
+        return prepareRedirectedNavigation(sender, request.url, request.openSeparately === true);
 
     if (request?.type === "store-fix-continue-source-region")
         return continueWithSourceRegion(sender, request.targetUrl, request.sourceRegion);
