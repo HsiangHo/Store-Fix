@@ -1,6 +1,7 @@
 const extensionApi = globalThis.browser ?? globalThis.chrome;
 const {
     DEFAULT_SETTINGS,
+    getNativeAppStoreUrl,
     getTargetRegion,
     normalizeSettings
 } = globalThis.StoreFixUrl;
@@ -41,6 +42,9 @@ const FALLBACK_MESSAGES = Object.freeze({
     currentFixedRegionAria: "Current fixed region: $1",
     invalidRegionCode: "Enter a two-letter region code, for example tw",
     notAppStoreAppLink: "The current tab is not an App Store link",
+    redirectFailedOpenAppStoreButton: "Open in App Store",
+    pageLanguageLabel: "Page language",
+    pageLanguageSwitchFailed: "Could not switch the page language. Reopen the popup and try again.",
     regionFilterAll: "All",
     regionFilterAsiaPacific: "Asia Pacific",
     regionFilterUsaCanada: "USA/Canada",
@@ -62,6 +66,8 @@ const regionSearchInput = document.querySelector("#region-search");
 const regionFilter = document.querySelector("#region-filter");
 const regionMoreButton = document.querySelector("#region-more");
 const quickSection = document.querySelector(".quick-section");
+const openAppStoreButton = document.querySelector("#open-app-store-button");
+const pageLanguages = document.querySelector("#page-languages");
 const quickSearchInput = document.querySelector("#quick-search");
 const quickFilter = document.querySelector("#quick-filter");
 const quickGrid = document.querySelector("#quick-grid");
@@ -127,6 +133,8 @@ function applyLocalization() {
     regionFilter.setAttribute("aria-label", getMessage("regionFilterAria"));
     regionGrid.setAttribute("aria-label", getMessage("fixedRegionGridAria"));
     quickJumpTitle.textContent = getMessage("quickJumpTitle");
+    openAppStoreButton.textContent = getMessage("redirectFailedOpenAppStoreButton");
+    pageLanguages.setAttribute("aria-label", getMessage("pageLanguageLabel"));
     quickSearchInput.placeholder = searchLabel;
     quickSearchInput.setAttribute("aria-label", searchLabel);
     quickFilter.setAttribute("aria-label", getMessage("quickFilterAria"));
@@ -399,6 +407,18 @@ function renderQuickRegions() {
     });
 }
 
+function getNativePlatform() {
+    if (/\b(iPhone|iPad|iPod)\b/.test(navigator.userAgent)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1))
+        return "ios";
+
+    if (/mac/i.test(navigator.userAgentData?.platform ?? navigator.platform)
+        || /\bMacintosh\b/.test(navigator.userAgent))
+        return "mac";
+
+    return "";
+}
+
 async function updateQuickSectionVisibility() {
     const context = await extensionApi.runtime.sendMessage({
         type: "store-fix-get-quick-jump-context"
@@ -407,10 +427,163 @@ async function updateQuickSectionVisibility() {
     canQuickJump = context?.canJump === true;
     quickSection.hidden = !canQuickJump;
 
+    const nativeUrl = getNativeAppStoreUrl(context?.activeUrl, getNativePlatform());
+    openAppStoreButton.hidden = !nativeUrl;
+
+    if (nativeUrl)
+        openAppStoreButton.href = nativeUrl;
+    else
+        openAppStoreButton.removeAttribute("href");
+
     if (canQuickJump)
         renderQuickRegions();
     else
         toggleQuickMenu(false);
+
+    await updatePageLanguages(context);
+}
+
+async function updatePageLanguages(context) {
+    pageLanguages.hidden = true;
+    pageLanguages.replaceChildren();
+
+    if (!globalThis.StoreFixLanguages.getLanguageUrl(context?.activeUrl, "en"))
+        return;
+
+    try {
+        let tabId = context.tabId;
+
+        if (!Number.isInteger(tabId)) {
+            const tabs = await extensionApi.tabs.query({ active: true, currentWindow: true });
+            tabId = tabs.find((tab) => globalThis.StoreFixLanguages.getLanguageNavigationUrl(
+                tab.url, context.activeUrl, "en"
+            ))?.id;
+        }
+
+        if (!Number.isInteger(tabId))
+            return;
+
+        let result;
+
+        try {
+            result = await extensionApi.tabs.sendMessage(tabId, {
+                type: "store-fix-get-page-languages"
+            }, { frameId: 0 });
+        } catch {
+            result = null;
+        }
+
+        if (result?.url !== context.activeUrl || !result.languages?.length) {
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 6000);
+
+            try {
+                const response = await fetch(context.activeUrl, { signal: controller.signal });
+
+                if (!response.ok)
+                    return;
+
+                const requestedUrl = new URL(context.activeUrl);
+                const responseUrl = new URL(response.url);
+
+                if (responseUrl.origin !== requestedUrl.origin || responseUrl.pathname !== requestedUrl.pathname)
+                    return;
+
+                const page = new DOMParser().parseFromString(await response.text(), "text/html");
+                result = globalThis.StoreFixLanguages.readPageLanguages(page, context.activeUrl);
+            } finally {
+                window.clearTimeout(timeout);
+            }
+        }
+
+        if (result.languages.length < 2)
+            return;
+
+        for (const language of result.languages) {
+            const url = globalThis.StoreFixLanguages.getLanguageUrl(context.activeUrl, language.code);
+
+            if (!url)
+                continue;
+
+            const link = document.createElement("a");
+            link.className = "language-link";
+            link.href = url;
+            link.lang = language.code;
+            const label = document.createElement("span");
+            label.dir = "auto";
+            label.textContent = language.label;
+            link.append(label);
+
+            if (language.selected)
+                link.setAttribute("aria-current", "true");
+
+            link.addEventListener("click", (event) => {
+                event.preventDefault();
+
+                if (!language.selected && pageLanguages.getAttribute("aria-busy") !== "true")
+                    openPageLanguage(language.code, context.activeUrl, tabId);
+            });
+            pageLanguages.append(link);
+        }
+
+        pageLanguages.hidden = false;
+        updateLanguageSeparators();
+    } catch (error) {
+        console.warn("Store Fix could not load page languages:", error);
+    }
+}
+
+function updateLanguageSeparators() {
+    let previousTop = -1;
+
+    for (const link of pageLanguages.querySelectorAll(".language-link")) {
+        const top = link.offsetTop;
+        link.dataset.rowStart = String(top !== previousTop);
+        previousTop = top;
+    }
+}
+
+async function openPageLanguage(language, url, tabId) {
+    pageLanguages.setAttribute("aria-busy", "true");
+    clearStatus();
+
+    try {
+        let result;
+
+        try {
+            result = await extensionApi.runtime.sendMessage({
+                type: "store-fix-open-page-language",
+                language,
+                url,
+                tabId
+            });
+        } catch {
+            result = null;
+        }
+
+        if (!result?.changed) {
+            // A reloaded popup can outlive the background version handling its messages.
+            const tab = await extensionApi.tabs.get(tabId);
+            const targetUrl = globalThis.StoreFixLanguages.getLanguageNavigationUrl(tab.url, url, language);
+
+            if (!targetUrl)
+                throw new Error(getMessage("pageLanguageSwitchFailed"));
+
+            const region = new URL(targetUrl).pathname.split("/").filter(Boolean)[0] ?? "";
+            await extensionApi.storage.local.set({
+                manualJumpUrl: targetUrl,
+                manualJumpRegion: /^[a-z]{2}$/i.test(region) ? region.toLowerCase() : "",
+                manualJumpExpiresAt: Date.now() + 15000
+            });
+            await extensionApi.tabs.update(tabId, { url: targetUrl });
+        }
+
+        closePopup();
+    } catch {
+        setStatus(getMessage("pageLanguageSwitchFailed"), true);
+    } finally {
+        pageLanguages.setAttribute("aria-busy", "false");
+    }
 }
 
 function renderOpenModeMenu() {
@@ -606,8 +779,14 @@ document.addEventListener("keydown", (event) => {
         toggleQuickMenu(false);
 });
 
+if (globalThis.ResizeObserver)
+    new ResizeObserver(updateLanguageSeparators).observe(pageLanguages);
+
+window.addEventListener("resize", updateLanguageSeparators);
+
 applyLocalization();
 loadSettings().catch((error) => {
     quickSection.hidden = true;
+    openAppStoreButton.hidden = true;
     setStatus(error.message, true);
 });

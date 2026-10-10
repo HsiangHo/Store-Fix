@@ -23,7 +23,7 @@
     },
 
     "content_scripts": [{
-        "js": [ "store-regions.js", "app-store-url.js", "content.js" ],
+        "js": [ "store-regions.js", "app-store-url.js", "app-store-languages.js", "content.js" ],
         "matches": [ "<all_urls>" ],
         "run_at": "document_start"
     }],

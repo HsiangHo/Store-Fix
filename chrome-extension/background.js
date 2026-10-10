@@ -572,8 +572,31 @@ async function getQuickJumpContext() {
     const sourceUrl = await getQuickJumpSourceUrl(activeTab.id, activeTab.url);
     return {
         canJump: Boolean(sourceUrl),
-        url: sourceUrl
+        url: sourceUrl,
+        tabId: activeTab.id,
+        activeUrl: activeTab.url
     };
+}
+
+async function openPageLanguage(language, sourceUrl, tabId) {
+    await settingsReady;
+
+    const activeTab = Number.isInteger(tabId) && tabId >= 0
+        ? await extensionApi.tabs.get(tabId)
+        : (await extensionApi.tabs.query({ active: true, currentWindow: true }))[0];
+    const targetUrl = globalThis.StoreFixLanguages.getLanguageNavigationUrl(activeTab?.url, sourceUrl, language);
+
+    if (typeof activeTab?.id !== "number" || !targetUrl)
+        return { changed: false };
+
+    await rememberRedirectIntent(activeTab.id, targetUrl);
+    await setManualJumpBypass(targetUrl, appStoreRegion(targetUrl));
+    await platformReady;
+    await requestHeaderRewriteReady;
+
+    const openUrl = canUseForceOpenMode() ? getForceOpenUrl(targetUrl, false) : targetUrl;
+    await extensionApi.tabs.update(activeTab.id, { url: openUrl });
+    return { changed: true, tabId: activeTab.id, url: targetUrl };
 }
 
 async function getCapabilities() {
@@ -744,6 +767,9 @@ function handleRuntimeMessage(request, sender) {
 
     if (request?.type === "store-fix-open-quick-jump")
         return openQuickJump(request.region, request.openMode);
+
+    if (request?.type === "store-fix-open-page-language")
+        return openPageLanguage(request.language, request.url, request.tabId);
 
     if (request?.type === "store-fix-open-forced-window")
         return openForcedAppStoreLink(request.url);

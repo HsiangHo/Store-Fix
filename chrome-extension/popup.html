@@ -6,10 +6,13 @@
     <link rel="stylesheet" href="popup.css">
     <script src="store-regions.js"></script>
     <script src="app-store-url.js"></script>
+    <script src="app-store-languages.js"></script>
     <script type="module" src="popup.js"></script>
 </head>
 <body>
     <main class="popup">
+        <a id="open-app-store-button" class="native-open-button" hidden>Open in App Store</a>
+
         <section class="section">
             <div class="section-title-row">
                 <label class="section-toggle">
@@ -44,6 +47,8 @@
                 <p id="force-open-mode-description" class="setting-description">Keep apps.apple.com links in Chrome instead of handing them to App Store.</p>
             </div>
         </section>
+
+        <nav id="page-languages" class="language-selector" aria-label="Page language" dir="ltr" hidden></nav>
 
         <section class="section quick-section" hidden>
             <div class="section-title-row">

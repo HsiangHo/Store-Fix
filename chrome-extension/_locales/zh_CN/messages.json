@@ -36,6 +36,12 @@
     "collapseRegions": {
         "message": "收起地区"
     },
+    "pageLanguageLabel": {
+        "message": "页面语言"
+    },
+    "pageLanguageSwitchFailed": {
+        "message": "无法切换页面语言，请重新打开弹窗后重试。"
+    },
     "quickJumpTitle": {
         "message": "快速跳转"
     },

@@ -36,6 +36,12 @@
     "collapseRegions": {
         "message": "Collapse regions"
     },
+    "pageLanguageLabel": {
+        "message": "Page language"
+    },
+    "pageLanguageSwitchFailed": {
+        "message": "Could not switch the page language. Reopen the popup and try again."
+    },
     "quickJumpTitle": {
         "message": "Quick Jump"
     },

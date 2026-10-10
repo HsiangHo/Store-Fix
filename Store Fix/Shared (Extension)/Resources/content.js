@@ -175,6 +175,14 @@ document.addEventListener("click", handlePossibleNavigation, true);
 document.addEventListener("auxclick", handlePossibleNavigation, true);
 document.addEventListener("mousedown", handlePossibleNavigation, true);
 
+extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request?.type !== "store-fix-get-page-languages")
+        return false;
+
+    sendResponse(globalThis.StoreFixLanguages.readPageLanguages(document, window.location.href));
+    return false;
+});
+
 loadSettings().then(async () => {
     if (await redirectCurrentPage())
         return;
